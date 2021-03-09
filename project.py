@@ -135,12 +135,6 @@ rows    = cur.fetchall()
 expAT   = sum(i[0] for i in rows)
 print(expAT)
 
-
-@app.route('/api/v1/regions', methods=['GET'])
-
-def api_all():
-    return jsonify(regions)
-app.run()
 #%% Test if Austrian exports equal results from postgres
 
 sumpsql = sum(i[0] for i in rows)
@@ -159,6 +153,32 @@ sumrows = sum(i[0] for i in rows)
 print(sumsweden)
 
 # This was more complicated to make a small test for.
+
+#%% Run on FLASK
+# =============================================================================
+## Example
+# @app.route('/api/v1/books', methods=['GET'])
+# 
+# books = cursor.execute('SELECT * from ...')
+#
+# def api_all():
+#     return jsonify(books)
+# app.run()
+# =============================================================================
+
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
+
+@app.route('/mrio_clean1/', methods=['GET'])
+
+regions = cur.execute("SELECT * from agricultureco2")
+record = cur.fetchall()
+print(record)
+
+def api_all():
+    regions = cur.execute("SELECT * from agricultureco2")
+    return jsonify(regions)
+
 
 
 # =============================================================================
