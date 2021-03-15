@@ -11,6 +11,7 @@ from flask import request, jsonify, Flask
 # Load exiobase, concordance matrix, and get metadata
 exio3 = pymrio.parse_exiobase3(path='/Volumes/SD/bsp3/IOT_2018_ixi.zip')
 con_mat = pd.read_excel('/Volumes/SD/bsp3/concord_matrix_bjelle_2020.xlsx').iloc[:,4:15]
+engine = create_engine('postgresql://postgres:uuc1se7F@localhost:5432/bsp3')
 exio3.meta
 
 #%%
@@ -61,8 +62,7 @@ CO2_agri_diag   = CO2_ag_diag.xs('Agriculture', level='sector')
 
 ### ========
 # Matrix needed
-CO2_econ = CO2_agri_diag.dot(ag.Z)
-CO2_agri = CO2_econ.xs('Agriculture', level='sector', axis=1)
+CO2_econ = CO2_ag_diag.dot(ag.Z)
 
 #%%
 
@@ -70,10 +70,6 @@ CO2_agri = CO2_econ.xs('Agriculture', level='sector', axis=1)
 # Values in CO2_agri should match what is in CO2_econ for Ag-Ag
 results = CO2_econ.loc[:,CO2_econ.columns.get_level_values(1).isin({'Agriculture'})]
 ## ^^ This returns the same as CO2_agri actually....
-#%%
-
-CO2_econ_from=pd.concat([CO2_econ],keys=['from'],names=['direction'])
-CO2_econ_ft=pd.concat([CO2_econ_from],keys=['to'],names=['direction'],axis=1)
 
 #%%
 
@@ -82,7 +78,10 @@ regions = pd.DataFrame(ag.get_regions())
 #sectors dataframe
 sectors = pd.DataFrame(ag.get_sectors())
 
-#Flatten matrix so values are all in one column
+#%% Just get agriculture sector emissions
+CO2_agri = CO2_econ.xs('Agriculture', level='sector', axis=1)
+
+#Flatten agriculture matrix so values are all in one column
 CO2_agri = CO2_agri.unstack().to_frame().sort_index(level=0)
 
 #Give value column a name
@@ -91,28 +90,35 @@ CO2_agri.rename(columns = { CO2_agri.columns[0]: "value" }, inplace = True)
 #Rename indices
 CO2_agri.rename_axis(['region_from','region_to'], inplace=True)
 
+#%% Get all sector emissions
+CO2_econ = CO2_econ.stack(level=[0,1])
+CO2_econ = CO2_econ.to_frame()
+CO2_econ.columns = ['value']
+CO2_econ.index.names = ['region_from', 'sector_from', 'region_to', 'sector_to']
+
 #add unit column
 CO2_agri['unit']='kgCO2'
+CO2_econ['unit']='kgCO2'
 
 
 #%% 
 ### Create tables in Postgres
 
 #regions
-engine = create_engine('postgresql://postgres:uuc1se7F@localhost:5432/bsp3')
 regions.to_sql('region', engine)
 
 #sectors
-engine = create_engine('postgresql://postgres:uuc1se7F@localhost:5432/bsp3')
 sectors.to_sql('sector', engine)
 
 #co2 agriculture
-engine = create_engine('postgresql://postgres:uuc1se7F@localhost:5432/bsp3')
 CO2_agri.to_sql('agriculture_CO2', engine)
+
+#co2 all sectors
+CO2_econ.to_sql('allco2', engine)
 
 #%% Querying the SQL database
 
-con = psycopg2.connect("dbname=bsp3 user=postgres password=5555")
+con = psycopg2.connect("dbname=bsp3 user=postgres password=uuc1se7F")
 con.rollback()
 cur = con.cursor()
 
@@ -123,17 +129,11 @@ regions = cur.execute(sql.SQL("SELECT * FROM {}").format(sql.Identifier('agricul
 rows    = cur.fetchall()
 print(rows)
 
-@app.route('/api/v1/regions', methods=['GET'])
-
-def api_all():
-    return jsonify(regions)
-app.run()
-
 #%% Select exports from Austria
-regions = cur.execute("SELECT value from agricultureco2 WHERE region_from='AT' AND NOT region_to = 'AT'")
+regions = cur.execute("SELECT value from agricultureco2 WHERE region_from='AT'")
 rows    = cur.fetchall()
-expAT   = sum(i[0] for i in rows)
-print(expAT)
+DroexpAT   = sum(i[0] for i in rows)
+
 
 #%% Test if Austrian exports equal results from postgres
 
@@ -150,7 +150,7 @@ else:
 swed    = cur.execute("SELECT value from agricultureco2 WHERE region_to='SE' AND NOT region_from= 'SE'")
 rows    = cur.fetchall()
 sumrows = sum(i[0] for i in rows)
-print(sumsweden)
+
 
 # This was more complicated to make a small test for.
 
@@ -169,19 +169,17 @@ print(sumsweden)
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-
-
 regions = cur.execute("SELECT * from agricultureco2")
 record = cur.fetchall()
 print(record)
 
 @app.route('/', methods=['GET'])
 
-def api_all():
+def home():
     regions = cur.execute("SELECT * from agricultureco2")
     return jsonify(regions)
 
-
+app.run()
 
 # =============================================================================
 # con.rollback()
@@ -201,12 +199,3 @@ def api_all():
 # api.mywri.com/co2/export/?to=lu
 # api.mywri.com/co2/export/
 # api.mywri.com/co2/export/?from=lu
-# 
-# =============================================================================
-# app = flask.Flask(__name__)
-# @app.route('/api/v1/resources/books/all', methods=['GET'])
-# def api_all():
-#     return jsonify(books)
-
-# need to execute this sequel query
-# books = cursor.execute('SELECT * from ...')
