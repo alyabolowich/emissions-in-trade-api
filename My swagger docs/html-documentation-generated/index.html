@@ -1,0 +1,791 @@
+<!doctype html>
+<html>
+  <head>
+    <title>EU emissions embodied in trade</title>
+    <style type="text/css">
+      body {
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+
+    </style>
+  </head>
+  <body>
+  <h1>EU emissions embodied in trade</h1>
+    <div class="app-desc">Have you ever wondered about the hidden environmental and social impacts of globalization? How much CO2 or vulnerable labor 'imported' as a result of trade between two countries? And of that trade, what economic sector is responsible for the most damage? Or the least? Having answers to these questions can help us to better understand our consumption and production impacts at a global scale. <br /><br />This is an API to source data regarding emissions embodied in trade in the EU. The primary use of this API is for those interested to learn about the environmental and social impacts of supply chains. Using this API, it is possible to find out the quantity of impacts (environmental, like CO2, or social, like vulnerable labor) that sectors and/or countries produce and consume. <br /><br /> NOTE: If there is a problem connecting to the database (such as an incorrect password), this will return a message corresponding to a 500 error saying: FATAL:  password authentication failed for user. If the URLs are incorrectly formatted, this will return a message corresponding to a 404 error (example shown in the region and sector endpoints).</div>
+    <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
+    <div class="app-desc">Contact Info: <a href="fake@email.com">fake@email.com</a></div>
+    <div class="app-desc">Version: v1</div>
+    <div class="app-desc">BasePath:/api/v1</div>
+    <div class="license-info">Apache 2.0</div>
+    <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#Regions">Regions</a></h4>
+  <ul>
+  <li><a href="#regionsGet"><code><span class="http-method">get</span> /regions</code></a></li>
+  </ul>
+  <h4><a href="#Sectors">Sectors</a></h4>
+  <ul>
+  <li><a href="#sectorsGet"><code><span class="http-method">get</span> /sectors</code></a></li>
+  </ul>
+  <h4><a href="#Stressors">Stressors</a></h4>
+  <ul>
+  <li><a href="#getExports"><code><span class="http-method">get</span> /stressors/{stressorID}/exports</code></a></li>
+  <li><a href="#getImports"><code><span class="http-method">get</span> /stressors/{stressorID}/imports</code></a></li>
+  <li><a href="#stressorsStressorIDAllGet"><code><span class="http-method">get</span> /stressors/{stressorID}/all</code></a></li>
+  <li><a href="#stressorsStressorIDGet"><code><span class="http-method">get</span> /stressors/{stressorID}</code></a></li>
+  </ul>
+
+  <h1><a name="Regions">Regions</a></h1>
+  <div class="method"><a name="regionsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /regions</code></pre></div>
+    <div class="method-summary">Find regions available (<span class="nickname">regionsGet</span>)</div>
+    <div class="method-notes">This endpoint will return a list of all 29 regions considered in this API (EU nations, Great Britain, Rest of World). <br /><br />NOTE: the 200 example here only returns some of the 29 regions to demonstrate how the output should be structured.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#responseRegions">responseRegions</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "region" : "cy"
+  }, {
+    "region" : "cz"
+  }, {
+    "region" : "de"
+  }, {
+    "region" : "gb"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#responseRegions">responseRegions</a>
+    <h4 class="field-label">404</h4>
+    URL not found
+        <a href="#404Response">404Response</a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Sectors">Sectors</a></h1>
+  <div class="method"><a name="sectorsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /sectors</code></pre></div>
+    <div class="method-summary">Find sectors available (<span class="nickname">sectorsGet</span>)</div>
+    <div class="method-notes">This endpoint will return a json file of all 11 sectors considered in this API.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#responseSectors">responseSectors</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "sector" : "agriculture"
+  }, {
+    "sector" : "mining"
+  }, {
+    "sector" : "manufacturing"
+  }, {
+    "sector" : "electricity"
+  }, {
+    "sector" : "water_and_waste"
+  }, {
+    "sector" : "construction"
+  }, {
+    "sector" : "retail"
+  }, {
+    "sector" : "transport"
+  }, {
+    "sector" : "accomodation_and_food_services"
+  }, {
+    "sector" : "finance_and_real_estate"
+  }, {
+    "sector" : "public_services"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#responseSectors">responseSectors</a>
+    <h4 class="field-label">404</h4>
+    URL not found
+        <a href="#404Response">404Response</a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Stressors">Stressors</a></h1>
+  <div class="method"><a name="getExports"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /stressors/{stressorID}/exports</code></pre></div>
+    <div class="method-summary">Find region exports to other regions (<span class="nickname">getExports</span>)</div>
+    <div class="method-notes">Select a country for which you wish to know its exports. This returns the sum of the region's stressors exported to all other regions. The region entered should be the region for which you want to see exports. For example, region=de will return the total stressor value that Germany exports to all other regions in the dataset.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">stressorID (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; For CO2 emissions, enter co2. For vulnerable labor, enter vl. For the economy, enter economy. </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">region (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Region exporting the stressor </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#Exports">Exports</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "sum" : 3.6370659886E8,
+    "region_from" : "sk"
+  }, {
+    "sum" : 3.6370659886E8,
+    "region_from" : "sk"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK - only one example shown here, but the results will return the sum of exports from the other 28 regions
+        <a href="#Exports">Exports</a>
+    <h4 class="field-label">BadStressor</h4>
+    Invalid stressor entered
+        <a href="#BadStressorResponse">BadStressorResponse</a>
+    <h4 class="field-label">IncorrectSyntax</h4>
+    Incorrect syntax
+        <a href="#IncorrectSyntaxResponse">IncorrectSyntaxResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getImports"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /stressors/{stressorID}/imports</code></pre></div>
+    <div class="method-summary">Find region imports from other regions (<span class="nickname">getImports</span>)</div>
+    <div class="method-notes">Select a country for which you wish to know its imports. This returns the sum of each regions' stressors imported to a region. The region entered should be the region for which you want to see imports. For example, region=se will return the total stressor value that Sweden imports from all other regions in the dataset.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">stressorID (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; For CO2 emissions, enter co2. For vulnerable labor, enter vl. For the economy, enter economy. </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">region (required)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Region importing the stressor </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#Imports">Imports</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "sum" : 5.14139740902E9,
+    "region_from" : "fr"
+  }, {
+    "sum" : 5.14139740902E9,
+    "region_from" : "fr"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK - only one example shown here, but the results will return the sum of imports from the other 28 regions
+        <a href="#Imports">Imports</a>
+    <h4 class="field-label">BadStressor</h4>
+    Invalid stressor entered
+        <a href="#BadStressorResponse">BadStressorResponse</a>
+    <h4 class="field-label">IncorrectSyntax</h4>
+    Incorrect syntax
+        <a href="#IncorrectSyntaxResponse">IncorrectSyntaxResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="stressorsStressorIDAllGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /stressors/{stressorID}/all</code></pre></div>
+    <div class="method-summary">Find all stressor data (<span class="nickname">stressorsStressorIDAllGet</span>)</div>
+    <div class="method-notes">This will return <b>all</b> regions and sectors for the selected stressor. If the URL syntax incorrectly input, the default 404 error message will be displayed. If the URL syntax is correct but the spelling of the stressor is wrong, a 400 error message will be displayed. <br /><br />NOTE: More than 100,000 data points will be produced when calling this endpoint, so this may take a couple seconds to load.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">stressorID (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; ID of stressor. For CO2 emissions, enter co2. For vulnerable labor, enter vl. For the economy, enter economy. </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#stressorsIndividual">stressorsIndividual</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "val" : 3.3184029779559575E7,
+    "unit" : "kgCO2",
+    "sector_to" : "accomodation_and_food_services",
+    "region_to" : "de",
+    "region_from" : "be",
+    "sector_from" : "manufacturing"
+  }, {
+    "val" : 3.3184029779559575E7,
+    "unit" : "kgCO2",
+    "sector_to" : "accomodation_and_food_services",
+    "region_to" : "de",
+    "region_from" : "be",
+    "sector_from" : "manufacturing"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK - This will return 100,000+ data points. Below is just a sample output of one data point.
+        <a href="#stressorsIndividual">stressorsIndividual</a>
+    <h4 class="field-label">404</h4>
+    URL not found
+        <a href="#404Response">404Response</a>
+    <h4 class="field-label">BadStressor</h4>
+    Invalid stressor entered
+        <a href="#BadStressorResponse">BadStressorResponse</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="stressorsStressorIDGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /stressors/{stressorID}</code></pre></div>
+    <div class="method-summary">Find region-to-region or sector-to-sector stressors (<span class="nickname">stressorsStressorIDGet</span>)</div>
+    <div class="method-notes">This endpoint can be queried to identify individual sectors and/or regions that either export or import stressors from other sectors or regions. The user must input at minimum either a sector or a region and at maximum can select outgoing and ingoing regions and sectors. The user will be notified of errors in case of bad events: 1) 400 error bad request if no query parameters are selected or 2) 400 error for incorrect region/sector input. <br /><br /> NOTE: You <b>must</b> enter at least one of the query parameters!</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">stressorID (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; For CO2 emissions, enter co2. For vulnerable labor, enter vl. For the economy, enter economy. </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">region_to (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Region importing the stressor </div><div class="param">region_from (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Region exporting the stressor </div><div class="param">sector_to (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sector importing the stressor </div><div class="param">sector_from (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sector exporting the stressor </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#stressorsIndividual">stressorsIndividual</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : [ {
+    "val" : 3.3184029779559575E7,
+    "unit" : "kgCO2",
+    "sector_to" : "accomodation_and_food_services",
+    "region_to" : "de",
+    "region_from" : "be",
+    "sector_from" : "manufacturing"
+  }, {
+    "val" : 3.3184029779559575E7,
+    "unit" : "kgCO2",
+    "sector_to" : "accomodation_and_food_services",
+    "region_to" : "de",
+    "region_from" : "be",
+    "sector_from" : "manufacturing"
+  } ],
+  "message" : "OK",
+  "status" : 200
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK - below is just a sample of one output of the data
+        <a href="#stressorsIndividual">stressorsIndividual</a>
+    <h4 class="field-label">MissingSectorOrRegion</h4>
+    Missing sector or region
+        <a href="#MissingSectorOrRegion">MissingSectorOrRegion</a>
+    <h4 class="field-label">IncorrectSectorRegionInput</h4>
+    Incorrect sector or region input
+        <a href="#IncorrectSectorRegionInput">IncorrectSectorRegionInput</a>
+    <h4 class="field-label">BadStressor</h4>
+    Invalid stressor entered
+        <a href="#BadStressorResponse">BadStressorResponse</a>
+  </div> <!-- method -->
+  <hr/>
+
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#404Response"><code>404Response</code> - </a></li>
+    <li><a href="#BadStressorResponse"><code>BadStressorResponse</code> - </a></li>
+    <li><a href="#ExpReg1"><code>ExpReg1</code> - </a></li>
+    <li><a href="#Exports"><code>Exports</code> - </a></li>
+    <li><a href="#ImpReg"><code>ImpReg</code> - </a></li>
+    <li><a href="#Imports"><code>Imports</code> - </a></li>
+    <li><a href="#IncorrectSectorRegionInput"><code>IncorrectSectorRegionInput</code> - </a></li>
+    <li><a href="#IncorrectSyntaxResponse"><code>IncorrectSyntaxResponse</code> - </a></li>
+    <li><a href="#MissingSectorOrRegion"><code>MissingSectorOrRegion</code> - </a></li>
+    <li><a href="#responseRegions"><code>responseRegions</code> - </a></li>
+    <li><a href="#responseSectors"><code>responseSectors</code> - </a></li>
+    <li><a href="#resultAll"><code>resultAll</code> - </a></li>
+    <li><a href="#stressorsIndividual"><code>stressorsIndividual</code> - </a></li>
+  </ol>
+
+  <div class="model">
+    <h3><a name="404Response"><code>404Response</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: Not found. The URL is not valid, please verify the URL is correct.</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> result of query </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 404</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BadStressorResponse"><code>BadStressorResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: Bad request - Looks like you need to provide a stressor. Please check the spelling of the stressor and ensure it is in lowercase.</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> result of query </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 400</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ExpReg1"><code>ExpReg1</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">region_from (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: sk</span></div>
+<div class="param">sum (optional)</div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 3.6370659886E8</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Exports"><code>Exports</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: OK</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#ExpReg1">array[ExpReg1]</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 200</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ImpReg"><code>ImpReg</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">region_from (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: fr</span></div>
+<div class="param">sum (optional)</div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 5.14139740902E9</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Imports"><code>Imports</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: OK</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#ImpReg">array[ImpReg]</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 200</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="IncorrectSectorRegionInput"><code>IncorrectSectorRegionInput</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: Bad request - incorrect region or sector input.</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> result of query </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 400</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="IncorrectSyntaxResponse"><code>IncorrectSyntaxResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: Bad Request. Please ensure your syntax is correct.</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> result of query </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 400</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="MissingSectorOrRegion"><code>MissingSectorOrRegion</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: Bad request - Please check that you have at least one sector or region selected.</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> result of query </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 400</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="responseRegions"><code>responseRegions</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: OK</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">array[Object]</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: [{"region":"cy"},{"region":"cz"},{"region":"de"},{"region":"gb"}]</span></div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 200</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="responseSectors"><code>responseSectors</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: OK</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">array[Object]</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: [{"sector":"agriculture"},{"sector":"mining"},{"sector":"manufacturing"},{"sector":"electricity"},{"sector":"water_and_waste"},{"sector":"construction"},{"sector":"retail"},{"sector":"transport"},{"sector":"accomodation_and_food_services"},{"sector":"finance_and_real_estate"},{"sector":"public_services"}]</span></div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 200</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="resultAll"><code>resultAll</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">region_from (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: be</span></div>
+<div class="param">region_to (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: de</span></div>
+<div class="param">sector_from (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: manufacturing</span></div>
+<div class="param">sector_to (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: accomodation_and_food_services</span></div>
+<div class="param">unit (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: kgCO2</span></div>
+<div class="param">val (optional)</div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 3.3184029779559575E7</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="stressorsIndividual"><code>stressorsIndividual</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> status message </div>
+          <div class="param-desc"><span class="param-type">example: OK</span></div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#resultAll">array[resultAll]</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> status code </div>
+          <div class="param-desc"><span class="param-type">example: 200</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
