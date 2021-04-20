@@ -1,0 +1,6 @@
+HTML and HTML2 API doc. FIles with name oas are OpenAPI 3.0, and without is Swagger 2.0.
+
+There seems to be an error with the arrays and how they get exported. 
+All array examples are duplicated, both in the PetStore documentation (reference) and in my files. 
+I converted my files to Open API 3.0, and still had the same error (as did PetStore for OpenAPI 3.0).
+
