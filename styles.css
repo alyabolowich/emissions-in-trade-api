@@ -1,0 +1,60 @@
+.navbar {
+    font-size: medium;
+    display: flex;
+    justify-content: space-around;
+    background-color: #D7D6AA;
+    color:black;
+    align-items: bottom;
+}
+
+.logo{
+    width: 24px;
+    height: 24px;
+    list-style-type: none;
+    font-size: x-large;
+}
+
+ul {
+    display: flex;
+}
+
+li {
+    list-style-type: none;
+    padding-top: 10px;
+}
+
+#nav-title {
+    display: flex;
+    font-size: xx-large;
+    padding-top: 20px;
+}
+
+#api-form {
+    margin-top: 30px; 
+}
+
+#submit-button{
+    margin-top: 10px; 
+    margin-bottom: 20px;
+}
+
+#map { 
+    height: 400px; 
+    justify-content: center;
+    width: 600px; 
+    margin-bottom: 150px;
+}
+
+.form-control {
+    height: 35px;
+}
+
+footer {
+    background-color: #D7D6AA;
+    margin: 0px auto;
+    padding: 20px 0px; 
+    color: black !important;
+    display: inline-block;
+
+}
+
