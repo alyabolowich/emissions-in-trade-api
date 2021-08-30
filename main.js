@@ -6,16 +6,24 @@
     
 const apiURL = 'http://api.emissionsintrade.com/v1/'
 
+var map = L.map('map').setView({lat: 53, lon: 15}, 3);
+polyLineGroup = L.layerGroup();
+
+// add OSM tiles
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom: 16
+}).addTo(map);
+
 // Load stressors
 async function loadStressors() {
     const response = await fetch(apiURL+'stressors');
     const data = await response.json();
     console.log("STRESSORS");
-    //console.log(data);
-    var options = '<option> -- Select stressor --</option>';
+    
+    var options = ""; //<option> -- Select stressor --</option>
 
     for (let stressor of data.result) {
-        //console.log(stressor.name);
         options += `<option value="${stressor.path_var}">${stressor.name}</option>`;
     }
 
@@ -29,8 +37,8 @@ async function loadRegions() {
     const response = await fetch(apiURL+'regions');
     const data = await response.json();
     console.log("REGIONS")
-    //console.log(data);  //this returns the JSON data ({message:, result:, status:})
-    var options = '<option> -- Select country --</option>';
+
+    var options = ""; //<option> -- Select Region --</option>
     //data.sort() // cannot sort because its a dictionart from the API (this is an OBJECT) needs to be aray
     data.result.sort(function(a,b){
         if (a.region_name < b.region_name) { //needed to call regionname because a and b are objects 
@@ -41,37 +49,37 @@ async function loadRegions() {
         }
           // names must be equal
         return 0;
-    }); //keep semicolon because its a statement
+    }); 
+
     for (let country of data.result) { //data.result is an array
         //console.log(country.region_name);
 
         options += `<option value="${country.region_id}">${country.region_name}</option>`;
+        //var lat = country.region_lat
+        //var lon = country.region_lon
+        //console.log(lat,lon)
         
     }
     document.getElementById("region-from").innerHTML=options;
     document.getElementById("region-to").innerHTML=options;
-
 }
 loadRegions();
-
 
 // Load sectors
 async function loadSectors() {
     const response = await fetch(apiURL+'sectors');
     const data = await response.json(); 
     console.log("SECTORS")
-    //console.log(data);
-    var options = `<option value=''>-- Select sector --</option>`;
+    var options = ""; //<option> -- Select sector --</option>
 
     for (let sector of data.result) {
-        //console.log(sector.sector);
         options += `<option value="${sector.sector}">${sector.sector}</option>`;
-        
     }
     document.getElementById("sector-from").innerHTML=options;
     document.getElementById("sector-to").innerHTML=options;
 }
 loadSectors();
+
 
 // Load result from API
 document.getElementById('api-form').addEventListener('submit', function (e){ //e for event
@@ -82,61 +90,78 @@ document.getElementById('api-form').addEventListener('submit', function (e){ //e
     var sectorFrom = document.getElementById('sector-from').value;
     var sectorTo = document.getElementById('sector-to').value;
     var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
-
-    $.ajax({
+    var regionLatLon = apiURL+"regions";
+    /*$.ajax({
         url: endpoint,
         type:'get',
-        crossDomain: true,
         success: function(data){
-            myArray = data.result
-            createTable(myArray)
-            //console.log(myArray)
-        //console.log(data);
+            myArray = data.result;
+            createTable(myArray);
+        }
+    }) */
+    $.ajax({
+        url: regionLatLon,
+        type:'get',
+        success: function(latlondata){
+            arrayLatLon = latlondata.result;
+            createTableLatLon(arrayLatLon, [regionTo, regionFrom]);
         }
     })
 })
 
+// Get selected data
+function getData(){
+    var regionToLatLon = [regionLatLon[Object.keys(regionLatLon)[0]]];
+    console.log(regionToLatLon);
+    var regionFromLatLon = [regionLatLon[Object.keys(regionLatLon)[1]]]; 
+    var fromToLatLon = [...regionFromLatLon, ...regionToLatLon];
+    console.log(fromToLatLon);
 
-// Create a table from the results
-function createTable(data){
-    var table = document.getElementById('results-table');
-    table.innerHTML = "";
-    for (var i=0; i<data.length; i++){
-        var row = ` <td>${data[i].region_from}</td>
-                    <td>${data[i].region_to}</td>
-                    <td>${data[i].sector_from}</td>
-                    <td>${data[i].sector_to}</td>
-                    <td>${data[i].val}</td>
-                    <td>${data[i].unit}</td>`;
-        table.innerHTML += row;
+    if (regionToLatLon === regionFromLatLon) {
+        polyLineGroup.addLayer(L.marker(regionToLatLon).addTo(map));
+
+    } else {
+        var latlngs = [
+            regionToLatLon,
+            regionFromLatLon,
+        ];
+        polyLineGroup.addLayer(L.polyline(fromToLatLon, {color: 'red'}).addTo(map));
     }
 }
-// Example starter JavaScript for disabling form submissions if there are invalid fields
 
+
+// Create a table from the results. Regions is an array containing rTo and rFrom
+function createTableLatLon(latlondata, regions){
+    var table = document.getElementById('results-latlon');
+    var regionLatLon = {}
+    table.innerHTML = "";
+    for (var i=0; i<regions.length; i++) {
+        for (var j=0; j<latlondata.length; j++) {
+            if (latlondata[j].region_id === regions[i]) {
+                console.log(latlondata[j].region_id)
+                console.log(regions[i])
+                // Get an object of the region lat and lons
+                regionLatLon[regions[i]] = {'lat':latlondata[j].region_lat,
+                                            'lon':latlondata[j].region_lon}
+                // Put into a table 
+                var row = ` <td>${latlondata[j].region_id}</td>
+                            <td>${latlondata[j].region_lat}</td>
+                            <td>${latlondata[j].region_lon}</td>`;
+                table.innerHTML += row;
+            }
+        }
+    }
+}
 
 
 })();
-/*
-// NEED TO MODIFY FOR VALIDITY may need to be checked before (lpacement in code)
-(function () {
-    'use strict'
-  
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.querySelectorAll('.needs-validation')
-  
-    // Loop over them and prevent submission
 
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {  // NEED TO CALL THIS (if not, then check something else)
-            event.preventDefault()
-            event.stopPropagation()
-          }
-  
-          form.classList.add('was-validated')
-        }, false)
-      })
-  })()
-  */
+
+
+
+
+
+
 
   /* CODE FOR SUBMIT FUNCTION TO CHECK VALIDITY
 
@@ -162,3 +187,4 @@ function createTable(data){
   // Example starter JavaScript for disabling form submissions if there are invalid fields
 
   // Example starter JavaScript for disabling form submissions if there are invalid fields
+
