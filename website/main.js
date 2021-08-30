@@ -6,22 +6,31 @@
     
 const apiURL = 'http://api.emissionsintrade.com/v1/'
 
+// add basemap layer
+var map = L.map('map').setView({lat: 53, lon: 15}, 3);
+var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+L.tileLayer(tileURL, {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom: 16
+}).addTo(map);
+
+// add layer group
+var lyrGroup = L.layerGroup().addTo(map);
+
 // Load stressors
 async function loadStressors() {
     const response = await fetch(apiURL+'stressors');
     const data = await response.json();
     console.log("STRESSORS");
-    //console.log(data);
-    var options = '<option> -- Select stressor --</option>';
+    
+    var options = ""; //<option> -- Select stressor --</option>
 
     for (let stressor of data.result) {
-        //console.log(stressor.name);
         options += `<option value="${stressor.path_var}">${stressor.name}</option>`;
     }
 
     document.getElementById("stressor").innerHTML=options;
 }
-
 loadStressors();
     
 // Load regions
@@ -29,8 +38,8 @@ async function loadRegions() {
     const response = await fetch(apiURL+'regions');
     const data = await response.json();
     console.log("REGIONS")
-    //console.log(data);  //this returns the JSON data ({message:, result:, status:})
-    var options = '<option> -- Select country --</option>';
+
+    var options = ""; //<option> -- Select Region --</option>
     //data.sort() // cannot sort because its a dictionart from the API (this is an OBJECT) needs to be aray
     data.result.sort(function(a,b){
         if (a.region_name < b.region_name) { //needed to call regionname because a and b are objects 
@@ -41,106 +50,138 @@ async function loadRegions() {
         }
           // names must be equal
         return 0;
-    }); //keep semicolon because its a statement
+    }); 
+
     for (let country of data.result) { //data.result is an array
-        console.log(country.region_name);
+        //console.log(country.region_name);
 
         options += `<option value="${country.region_id}">${country.region_name}</option>`;
+        //var lat = country.region_lat
+        //var lon = country.region_lon
+        //console.log(lat,lon)
         
     }
     document.getElementById("region-from").innerHTML=options;
     document.getElementById("region-to").innerHTML=options;
-
 }
 loadRegions();
-
 
 // Load sectors
 async function loadSectors() {
     const response = await fetch(apiURL+'sectors');
     const data = await response.json(); 
     console.log("SECTORS")
-    //console.log(data);
-    var options = `<option value=''>-- Select sector --</option>`;
+    var options = ""; //<option> -- Select sector --</option>
 
     for (let sector of data.result) {
-        //console.log(sector.sector);
         options += `<option value="${sector.sector}">${sector.sector}</option>`;
-        
     }
     document.getElementById("sector-from").innerHTML=options;
     document.getElementById("sector-to").innerHTML=options;
 }
 loadSectors();
 
-// Load result from API
-document.getElementById('api-form').addEventListener('submit', function (e){ //e for event
-    //e.preventDefault(); //
-    var stressor = document.getElementById('stressor').value;
-    var regionTo = document.getElementById('region-to').value;
-    var regionFrom = document.getElementById('region-from').value;
-    var sectorFrom = document.getElementById('sector-from').value;
-    var sectorTo = document.getElementById('sector-to').value;
-    var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
+// Check how many Leaflet layers at start
+function layerStart(){
+    let qq = 0;
+    map.eachLayer(function(){ qq += 1; });
+    console.log('Map has', qq, 'layers at start.');
+}
+layerStart();
 
-    $.ajax({
-        url: endpoint,
-        type:'get',
-        crossDomain: true,
-        success: function(data){
-            myArray = data.result
-            createTable(myArray)
-            //console.log(myArray)
-        //console.log(data);
-        
-        //document.getElementById('log').innerHTML = JSON.stringify(data); // This shows the JSON string on the website
-        }
-    })
-
-// Check for form validity
-
-
-})
-/*
-*/
-
-// Create a table from the results
-function createTable(data){
-    var table = document.getElementById('results-table');
-    table.innerHTML = "";
-    for (var i=0; i<data.length; i++){
-        var row = ` <td>${data[i].region_from}</td>
-                    <td>${data[i].region_to}</td>
-                    <td>${data[i].sector_from}</td>
-                    <td>${data[i].sector_to}</td>
-                    <td>${data[i].val}</td>
-                    <td>${data[i].unit}</td>`;
-        table.innerHTML += row;
+// Delete old layers 
+function deleteLayers(){
+    // Remove old polylines/markers on each submit
+    if(map.hasLayer(lyrGroup)){
+        lyrGroup.eachLayer(
+            function(i){
+                lyrGroup.removeLayer(i);
+        });
     }
 }
 
-})();
-/*
-// NEED TO MODIFY FOR VALIDITY may need to be checked before (lpacement in code)
-(function () {
-    'use strict'
-  
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.querySelectorAll('.needs-validation')
-  
-    // Loop over them and prevent submission
+// Load result from API
+function loadResult(){
+    document.getElementById('api-form').addEventListener('submit', function (e){ //e for event
+        e.preventDefault(); //
+        deleteLayers();
+        var stressor = document.getElementById('stressor').value;
+        var regionTo = document.getElementById('region-to').value;
+        var regionFrom = document.getElementById('region-from').value;
+        var sectorFrom = document.getElementById('sector-from').value;
+        var sectorTo = document.getElementById('sector-to').value;
+        var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
+        var regionLatLon = apiURL+"regions";
+        /*$.ajax({
+            url: endpoint,
+            type:'get',
+            success: function(data){
+                myArray = data.result;
+                createTable(myArray);
+            }
+        }) */
+        $.ajax({
+            url: regionLatLon,
+            type:'get',
+            success: function(latlondata){
+                // Yields array of all lat/lon for all 29 countries
+                arrayLatLon = latlondata.result;
+                createTableLatLon(arrayLatLon, [regionTo, regionFrom]);
+            }
+        })
+    })
+}
+loadResult();
 
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {  // NEED TO CALL THIS (if not, then check something else)
-            event.preventDefault()
-            event.stopPropagation()
-          }
-  
-          form.classList.add('was-validated')
-        }, false)
-      })
-  })()
-  */
+// Create a table from the results. Regions is an array containing rTo and rFrom
+function createTableLatLon(latlondata, regions){
+
+    var table = document.getElementById('results-latlon');
+    var regionsLatLon = {}
+    table.innerHTML = "";
+    for (var i=0; i<regions.length; i++) {
+        for (var j=0; j<latlondata.length; j++) {
+            if (latlondata[j].region_id === regions[i]) {
+                // Get an object of the region lat and lons
+                regionsLatLon[regions[i]] = {'lat':latlondata[j].region_lat,
+                                            'lon':latlondata[j].region_lon}
+                // Put into a table 
+                var row = ` <td>${latlondata[j].region_id}</td>
+                            <td>${latlondata[j].region_lat}</td>
+                            <td>${latlondata[j].region_lon}</td>`;
+                table.innerHTML += row;
+            }
+        }
+    }
+    //region to is first element in the object.
+    var regionToLatLon = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
+    //console.log(regionToLatLon);
+
+    var regionFromLatLon = [regionsLatLon[Object.keys(regionsLatLon)[1]]]; 
+    var fromToLatLon = [...regionFromLatLon, ...regionToLatLon];
+    //console.log(fromToLatLon);
+
+    if (regionsLatLon[regions[0]] === regionsLatLon[regions[1]]) {
+        //console.log(regionLatLon[regions[0]]);
+        //console.log(regionLatLon[regions[1]]);
+        lyrGroup.addLayer(L.marker(regionsLatLon[regions[0]]).addTo(map));
+
+    } else {
+        lyrGroup.addLayer(L.polyline(fromToLatLon, {color: 'red'}).addTo(map));
+    }
+    let ll = 0;
+    map.eachLayer(function(){ ll += 1; });
+    console.log('Map has', ll, 'layers.');
+}
+//
+
+})();
+
+
+
+
+
+
 
   /* CODE FOR SUBMIT FUNCTION TO CHECK VALIDITY
 
@@ -166,3 +207,4 @@ function createTable(data){
   // Example starter JavaScript for disabling form submissions if there are invalid fields
 
   // Example starter JavaScript for disabling form submissions if there are invalid fields
+
