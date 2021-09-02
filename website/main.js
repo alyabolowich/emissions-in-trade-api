@@ -1,8 +1,3 @@
-
-//const cors = require('./cors');
-
-//app.use(cors())
-
 ( function (){
     
 const apiURL = 'http://api.emissionsintrade.com/v1/'
@@ -108,36 +103,38 @@ function deleteLayers(){
     }
 }
 
-function callData() {
-    document.getElementById('api-form').addEventListener('submit', function (e){
-        e.preventDefault(); //
-        var stressor = document.getElementById('stressor').value;
-        var regionTo = document.getElementById('region-to').value;
-        var regionFrom = document.getElementById('region-from').value;
-        var sectorFrom = document.getElementById('sector-from').value;
-        var sectorTo = document.getElementById('sector-to').value;
-        var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
-        $.ajax({
-            url: endpoint,
-            type:'get',
-            async: false,
-            success: function(data){
-                //console.log(endpoint)         //check that correct values returned
-                myArray = data.result
-                createTable(myArray)
-                //console.log(myArray)
-                //console.log(data);   
-            }
-        })
-    })
-}
-callData();
+
+document.getElementById('api-form').addEventListener('submit', function (e){
+    e.preventDefault(); //
+    var stressor = document.getElementById('stressor').value;
+    var regionTo = document.getElementById('region-to').value;
+    var regionFrom = document.getElementById('region-from').value;
+    var sectorFrom = document.getElementById('sector-from').value;
+    var sectorTo = document.getElementById('sector-to').value;
+    var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
+
+    //console.log(endpoint);
+    async function getURL() {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        console.log(response);
+        console.log(data);
+    
+        // Create the table that shows the emissions
+        createTable(data.result);
+    }
+    
+    getURL();
+})
+
+
 
 // Create a table from the results
 function createTable(data){
     var table = document.getElementById('results-table');
     table.innerHTML = "";
     for (var i=0; i<data.length; i++){
+        //console.log(data.length);
         var row = ` <td>${data[i].region_from}</td>
                     <td>${data[i].region_to}</td>
                     <td>${data[i].sector_from}</td>
@@ -148,36 +145,45 @@ function createTable(data){
     }
 }
 
+
+async function test() {
+    var endpoint = "http://api.emissionsintrade.com/v1/stressors/co2?region_to=at&region_from=at&sector_from=accommodation_and_food_services&sector_to=accommodation_and_food_services"
+    const response = await fetch(endpoint);
+    const data = await response.json();
+    //console.log(await data.result)
+}
+test();
+
+
 // Load result from API
-function loadMapData(){
-    document.getElementById('api-form').addEventListener('submit', function (e){
+
+function extractRegion(){
+    document.getElementById('api-form').addEventListener('click', function (e){
         e.preventDefault(); //
         deleteLayers();
-
+    
         // Get the region data selected
         var regionTo = document.getElementById('region-to').value;
         var regionFrom = document.getElementById('region-from').value;
-
         var regionLatLon = apiURL+"regions";
-
-
-
-        $.ajax({
-            url: regionLatLon,
-            type:'get',
-            success: function(latlondata){
-                // Yields array of all lat/lon for all 29 countries
-                arrayLatLon = latlondata.result;
-                getLatLon(arrayLatLon, [regionTo, regionFrom]);
-            }
-        })
+    
+        async function getRegionGeo() {
+            const response = await fetch(regionLatLon);
+            const latlondata = await response.json();
+            //console.log(latlondata);
+        
+            var arrayLatLon = latlondata.result;
+            getLatLon(arrayLatLon, [regionTo, regionFrom]);
+        }
+        getRegionGeo();
     })
 }
-loadMapData();
+extractRegion();
+
+
 
 // Create a table from the results. Regions is an array containing rTo and rFrom
 function getLatLon(latlondata, regions){
-
 
     var table = document.getElementById('results-latlon');
     var regionsLatLon = {}
@@ -270,21 +276,6 @@ function polylineColor(){
 polylineColor();
 */
 
-
-/*
-        // Get the sector selected
-        // Change color of polyline depending on sector
-        var colorDict = {"agriculture": "blue", "accommodation_and_food_services": "red"}
-        //console.log(sectorFrom);
-        var sectorFrom = document.getElementById('sector-from').value;
-        if (colorDict.hasOwnProperty(sectorFrom)){
-            console.log("true");
-        } else {
-            console.log("false");
-        }
-*/
-
-
 })();
 
 
@@ -318,32 +309,3 @@ polylineColor();
 
   // Example starter JavaScript for disabling form submissions if there are invalid fields
 
-/*
-function getEndpoint() {
-    document.getElementById('api-form').addEventListener('submit', function (e){ //e for event
-        //e.preventDefault(); //
-        var stressor = document.getElementById('stressor').value;
-        var regionTo = document.getElementById('region-to').value;
-        var regionFrom = document.getElementById('region-from').value;
-        var sectorFrom = document.getElementById('sector-from').value;
-        var sectorTo = document.getElementById('sector-to').value;
-        var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
-
-    return endpoint;
-    }
-)}
-
-var endpoint = getEndpoint();
-
-async function getData() {
-
-    const response = await fetch(endpoint);
-    const data = await response.json();
-    console.log("ENDPOINT RECEIVED");
-    
-    myArray = data.result
-    createTable(myArray)
-}
-getData();
-
-*/
