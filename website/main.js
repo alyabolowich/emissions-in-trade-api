@@ -3,7 +3,7 @@
 const apiURL = 'http://api.emissionsintrade.com/v1/'
 
 // add basemap layer
-var map = L.map('map').setView({lat: 53, lon: 15}, 3);   //Set center coordinates and zoom level (3)
+var map = L.map('map').setView({lat: 51.5, lon: 11}, 3);   //Set center coordinates and zoom level (3)
 var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 L.tileLayer(tileURL, {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
@@ -103,29 +103,48 @@ function deleteLayers(){
     }
 }
 
+// Create helper function to allow two independent actions on the Submit button
+var apiForm = document.getElementById('api-form');
 
-document.getElementById('api-form').addEventListener('submit', function (e){
-    e.preventDefault(); //
-    var stressor = document.getElementById('stressor').value;
-    var regionTo = document.getElementById('region-to').value;
-    var regionFrom = document.getElementById('region-from').value;
-    var sectorFrom = document.getElementById('sector-from').value;
-    var sectorTo = document.getElementById('sector-to').value;
-    var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
+/*for (var i=0; i<tabs.length; i++) {
+    var currentTab = tabs[i];
+    currentTab.onclick = extractUserInput();
+    currentTab.onclick = extractRegion();
+}
 
-    //console.log(endpoint);
-    async function getURL() {
-        const response = await fetch(endpoint);
-        const data = await response.json();
-        console.log(response);
-        console.log(data);
+function multipleListeners() {
+
+}
+
+multipleListeners(
+    document.getElementById('api-form'),
+    ['submit']) */
+
+function extractUserInput() {
+    document.getElementById('api-form').addEventListener('click', function (e){
+        e.preventDefault(); //
+        var stressor = document.getElementById('stressor').value;
+        var regionTo = document.getElementById('region-to').value;
+        var regionFrom = document.getElementById('region-from').value;
+        var sectorFrom = document.getElementById('sector-from').value;
+        var sectorTo = document.getElementById('sector-to').value;
+        var endpoint = apiURL+`stressors/${stressor}?region_to=${regionTo}&region_from=${regionFrom}&sector_from=${sectorFrom}&sector_to=${sectorTo}`; 
     
-        // Create the table that shows the emissions
-        createTable(data.result);
-    }
-    
-    getURL();
-})
+        //console.log(endpoint);
+        async function getURL() {
+            const response = await fetch(endpoint);
+            const data = await response.json();
+            console.log(response);
+            console.log(data);
+        
+            // Create the table that shows the emissions
+            createTable(data.result);
+        }
+        
+        getURL();
+    })
+}
+//extractUserInput();
 
 
 
@@ -160,12 +179,12 @@ test();
 function extractRegion(){
     document.getElementById('api-form').addEventListener('click', function (e){
         e.preventDefault(); //
-        deleteLayers();
     
         // Get the region data selected
         var regionTo = document.getElementById('region-to').value;
         var regionFrom = document.getElementById('region-from').value;
         var regionLatLon = apiURL+"regions";
+        console.log(regionTo);
     
         async function getRegionGeo() {
             const response = await fetch(regionLatLon);
@@ -249,6 +268,12 @@ function getLatLon(latlondata, regions){
         
     }
 }
+
+function myFunc(){
+    extractRegion();
+    extractUserInput();
+}
+myFunc();
 /*
 function polylineColor(){
     // List all sectors with corresponding colors in dict
