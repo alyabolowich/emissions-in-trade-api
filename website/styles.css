@@ -1,17 +1,25 @@
-.navbar {
-    font-size: medium;
-    display: flex;
-    justify-content: space-around;
-    background-color: #D7D6AA;
-    color:black;
-    align-items: bottom;
+body {
+    background-color: #ffffff;
+    color: #1e2744;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
 }
 
-.logo{
-    width: 24px;
-    height: 24px;
-    list-style-type: none;
-    font-size: x-large;
+.container {
+    align-items: center;
+}
+nav {
+    height: 150px;
+    background-color: #ffffff ;
+    display: flex;
+    justify-content: space-around !important;
+    color: #1e2744;
+    align-items: bottom;
+    border-bottom: 2px solid #e2866d;
+    font-family: Helvetica;
+}
+
+.nav-link {
+    color: #1e2744;
 }
 
 ul {
@@ -20,17 +28,20 @@ ul {
 
 li {
     list-style-type: none;
-    padding-top: 10px;
 }
 
-#nav-title {
+h1 {
+    font-size: 36px; 
+    font-style: bold; 
+    font-variant: normal; 
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
+    font-weight: 100; 
     display: flex;
-    font-size: xx-large;
-    padding-top: 20px;
 }
 
 #api-form {
     margin-top: 30px; 
+    color: #1e2744;
 }
 
 #submit-button{
@@ -39,22 +50,43 @@ li {
 }
 
 #map { 
-    height: 400px; 
+    position:relative;
+    height:500px;
+    width: 100%;
     justify-content: center;
-    width: 600px; 
     margin-bottom: 150px;
+
 }
 
 .form-control {
     height: 35px;
+    color: #1e2744;
 }
 
 footer {
-    background-color: #D7D6AA;
     margin: 0px auto;
     padding: 20px 0px; 
-    color: black !important;
-    display: inline-block;
+    color: #1e2744;
+    display: flex;
+    justify-content: space-around;
+    font-family: Helvetica; 
 
 }
 
+a {
+    color: #1e2744;
+    text-decoration: none;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
+    display: inline;
+    font-size: 14pt;
+}
+
+a:hover {
+    color: #1e2744;
+    text-decoration: none;
+}
+
+.logo {
+    height: 80px;
+    margin-right: 30px;
+}

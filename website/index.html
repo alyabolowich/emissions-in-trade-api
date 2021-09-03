@@ -13,6 +13,7 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100&display=swap" rel="stylesheet">  
 
 
     <!-- Leaflet-->
@@ -29,63 +30,65 @@
 
 <body>
     <!-- navbar -->
-    <div class="container-flex">
-        <nav class="navbar navbar-expand-lg">
-            <div class="logo">
-                <img src="favicon.ico">
-                <!-- will need to make this an a tag to link to the homepage -->
-            </div>
-            <p id="nav-title"> Emissions in Trade </p>
-            <div>
-                <ul>
-                    <li>
-                        <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">API</a>
-                    </li>
-                    <li>
-                        <a class="nav-link" href="#">What is Input-Output?</a>
-                    </li>
-                    <li>
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+    <div>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <img class="logo" src="logo.svg" alt="Logo"/>
+                <h1 href="#">Emissions in Trade</h1>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#Navbar"> <!-- this btn triggers the showing/hiding of the navbar div below-->
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div>
+                        <ul>
+                            <li>
+                                <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">Access the data</a>
+                            </li>
+                            <li>
+                                <a class="nav-link" href="io.html">About</a>
+                            </li>
+                            <li>
+                                <a class="nav-link" href="contact.html">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+            </nav>
+        </div>
     </div>
 
     <!-- form -->
     <div class="container">
-        <form id="api-form"> 
-            <div class="form-group required-validation">
+        <form id="api-form" class="needs-validation" novalidate>  
+            <div class="form-group col-8">
                 <label for="stressor" class="form-label">Stressor (required)</label> 
-                <select class="form-control" id="stressor" required>       
-                    <option selected disabled value=""> -- Select a Stressor -- </option>
+                <select class="form-control" id="stressor">     
+                    <div class="invalid-feedback"> Please select a stressor</div>
                 </select>   
             </div>
             <div>
                 <p style="padding-top: 15px;"> You must select at least one of the following:</p>
             </div>
-            <div class="form-group">
+            <div class="form-group col-8">
                 <label for="region-from">Region from</label> 
                 <select class="form-control" id="region-from"></select>
             </div>
-            <div class="form-group">
+            <div class="form-group col-8">
                 <label for="region-to">Region to</label>
                 <select class="form-control" id="region-to"></select>
             </div>
-            <div class="form-group">
+            <div class="form-group col-8">
                 <label for="sector-from">Sector from</label>
                 <select class="form-control" id="sector-from"></select>
             </div>
-            <div class="form-group">
+            <div class="form-group col-8">
                 <label for="sector-to">Sector to</label>
                 <select class="form-control" id="sector-to"></select>
             </div>
-
             <button type="submit" class="btn btn-outline-dark" id="submit-button"> Submit </button>
         </form>
     </div>
     <!-- create a table -->
     <div class="container">
+    <div class="col-8">
         <!-- populate table with endpoint data here -->
         <table class="table table-bordered">
             <thead>
@@ -99,16 +102,33 @@
                 </tr>
             </thead>
             <tbody id="results-table">
-                <tr onclick=testFunction()>
-                </tr>
                 <!-- values from createTable function -->
             </tbody>
         </table>
     </div>
-    
+    </div>
     <div class="container">
+    <div class="col-8">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Region</th>
+                    <th scope="col">Latitude</th>
+                    <th scope="col">Longitude</th>
+                </tr>
+            </thead>
+            <tbody id="results-latlon">
+                <!-- values from createTable function -->
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <div class="container">
+    <div class="col-8">
         <div id="map">
         </div>
+    </div>
     </div>  
 
 
@@ -116,8 +136,7 @@
     <footer>
         <div class="container">
             <div class="row">             
-                <div class="col-4 offset-1 col-sm-2"> <!-- for xtra small screen sizes, this will occupy 4 cols
-                and for sm-xl it will occupy just 2-->
+                <div> 
                 <!-- offset-1 means that it gets pushed 1 column over in xs-xl screens-->
                     <h5>Links</h5>
                     <ul class="list-unstyled"> <!-- removes bullet points in front of links-->
@@ -144,9 +163,10 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
-
-    <script src="main.js"></script>
-    <script src="map.js"></script>
+    <script src="geometry-util.js"></script>
+    <script src="leaflet-arrowheads.js"></script>
+    <!-- main -->
+    <script type="module" src="main.js"></script>
 
 </body> 
 </html>
