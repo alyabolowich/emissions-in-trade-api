@@ -5,3 +5,4 @@ Discussion regarding climate change and environmental impacts are becoming incre
 For API documentation, please refer to the following link: http://api.emissionsintrade.com/v1
 
 This project is part of a semester-long project during my third semester in the Bachelor of Computer Science at the Univesity of Luxembourg. 
+Written in U+1F40D. 
