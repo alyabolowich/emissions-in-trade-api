@@ -6,5 +6,5 @@ For API documentation, please refer to the following link: http://api.emissionsi
 
 This is a two-semester project during my third and fourth semesters in the Bachelor of Computer Science at the Univesity of Luxembourg. 
 
-The API documentation was produced in using HTML, the API in Python (Flask web framework), and the website's business logic was written in Javascript.
+The API documentation was produced using Swagger and formatted with Bootprint, the API was coded in Python (Flask web framework), and the website's business logic was written in Javascript.
 
