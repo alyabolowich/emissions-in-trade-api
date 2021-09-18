@@ -4,5 +4,7 @@ Discussion regarding climate change and environmental impacts are becoming incre
 
 For API documentation, please refer to the following link: http://api.emissionsintrade.com/v1
 
-This project is part of a semester-long project during my third semester in the Bachelor of Computer Science at the Univesity of Luxembourg. 
+This is a two-semester project during my third and fourth semesters in the Bachelor of Computer Science at the Univesity of Luxembourg. 
+
+The API documentation was produced in using HTML, the API in Python (Flask web framework), and the website's business logic was written in Javascript.
 
