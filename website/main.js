@@ -152,6 +152,7 @@ async function getResults() {
         const data     = await response.json();
         //console.log("this is data from getResults");
         //console.log(data);
+        var data1 = data;
         return data;
 
 
@@ -159,6 +160,7 @@ async function getResults() {
         console.log("Error in API request"); 
     }
 }
+
 
 async function regionalData(){
     formData = readData();
@@ -184,7 +186,7 @@ async function regionalData(){
     }              
 }
 
-async function getLatLon(latlondata, regions){
+function getLatLon(latlondata, regions){
     // Get the latitude and longitude of the regions to/from.
     var regionsLatLon = {}
     for (var i=0; i<regions.length; i++) {
@@ -216,112 +218,36 @@ async function getLatLon(latlondata, regions){
 
 }
 
-async function makeArrow() {
-    deleteLayers();
-    var formData = readData();
-    var results  = await getResults();
-    var rData    = await regionalData();
-    var pop      = await setPopUp();
 
-
-    /* Get latlong data */ 
-    var start = rData[0];
-    var end   = rData[1];
-
-    var sectorFrom = results.result[0].sector_from;
-    var value      = results.result[0].val;
-    var stressor   = formData.stressor;
-
-    /* Color the polyline based on the sector from which the emission comes */
-    var lineColor = colorDict[sectorFrom];
-
-    /* Size the width of the polyline based on the sector's emission intensity.
-    Emission intensity is proportional to the query value over the highest value for
-    that stressor. The log of both is used to reduce the distance between the two values
-    (since stressorMax is a very large value, it always yields a very small value). The
-    lineSize is the maximum value that the line should be (anything bigger and it does
-    not look good visually) */
-
-    var stressorMax = maxVals[stressor];
-    var lineSize = 20;
-    var stressorRatio =  Math.log(value)/Math.log(stressorMax);
-
-    //console.log(stressorRatio);
-
-    /* Any value <1 is considered to be 0 (log of any value <1 is negative) */
-    if (value < 1){
-        var newMarker = L.icon({iconUrl: 'images/marker.svg', iconSize: [24, 30], iconAnchor: [15, 30]});
-        lyrGroup.addLayer(L.marker(start, {icon: newMarker}).addTo(map));
-        map.setView(start, zoom=5);
-
-        // Eventually do not show info, but make popup that gives information if 0 
-
-    } else {
-        lineWeight = 1 + lineSize*stressorRatio;
-    }
-    
-
-    
-    /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
-    with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
-    designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
-    since the midpoint is assumed to be in the middle of the bottom edge of the icon.  */
-    if (start === end) {
-        var newMarker = L.icon({iconUrl: 'images/marker.svg', iconSize: [24, 30], iconAnchor: [15, 30]});
-        lyrGroup.addLayer(L.marker(start, {icon: newMarker}).bindPopup(pop).addTo(map));
-        map.setView(start, zoom=5);
-
-
-        
-    } else {
-        var polyline = lyrGroup.addLayer(L.polyline([start,end], 
-                                                    {color: lineColor, 
-                                                    weight: lineWeight})
-                                        .arrowheads({size: '20px',
-                                                    yawn: 55,
-                                                    fill: true}));
-        polyline.addTo(map);
-    }
-}
-
-async function setPopUp() {
-    var results  = await getResults();
-
+function setPopUp(results) {
     for (var i=0; i<results.result.length; i++){
-    var popUpTable = `<div class="column">
-                        <table id="pop-up-table">
-                        <th>
-                        </th>
-                            <tr id="pop-up-table-row">
-                                <td>Region: </td>
-                                <td>${results.result[i].region_from}</td>
-                            </tr>
-                            <tr id="pop-up-table-row">
-                                <td>Sector From: </td>
-                                <td> ${results.result[i].sector_from}</td>
-                            </tr>
-                            <tr id="pop-up-table-row">
-                                <td>Sector To: </td> 
-                                <td>${results.result[i].sector_to}</td>
-                            </tr>
-                        </th>
-                        <th>
-                        </th>
-                            <tr id="pop-up-table-row">
-                                <td>Value: </td> 
-                                <td>${Math.round(results.result[i].val)}</td>
-                            </tr>
+    var popUpTable = `<div class="row" id="pop-up-container">
+                            <table id="pop-up-table">
+                            <th>
+                            </th>
                                 <tr id="pop-up-table-row">
-                                <td>Unit: </td> 
-                                <td>${results.result[i].unit}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="column>
-                    <p> ${Math.round(results.result[i].val)} </p>
-                    <p> ${results.result[i].unit} </p>
-                    </div>`
-                         ;
+                                    <td>Region: </td>
+                                    <td>${results.result[i].region_from}</td>
+                                </tr>
+                                <tr id="pop-up-table-row">
+                                    <td>Sector From: </td>
+                                    <td> ${results.result[i].sector_from}</td>
+                                </tr>
+                                <tr id="pop-up-table-row">
+                                    <td>Sector To: </td> 
+                                    <td>${results.result[i].sector_to}</td>
+                                </tr>
+                            </th>
+                            </table>
+                        </div>
+                        <div class="row" id="pop-up-container">
+                            <div class="column" id="pop-up-value-column">
+                                <p id="pop-up-value"> ${Math.round(results.result[i].val)} </p>
+                            </div>
+                            <div class="column" id="pop-up-value-column">
+                                <p id="pop-up-unit"> ${results.result[i].unit} </p>
+                            </div>
+                        </div>`;
     }
 
     var popup = L.popup({offset: [-2, -24]})
@@ -333,8 +259,7 @@ async function setPopUp() {
 document.getElementById("info-table").style.visibility="hidden";
 
 
-async function createTable(){
-    var results  = await getResults();
+function createTable(results){
     document.getElementById("info-table").style.visibility="visible";
     var table = document.getElementById('results-table-body');
     table.innerHTML = "";
@@ -351,13 +276,106 @@ async function createTable(){
     }
 }
 
+function makePolyline (rData, results) {
+    deleteLayers();
+
+    var formData = readData();
+    var value    = results.result[0].val;
+    var stressor = formData.stressor;
+
+    /* Calculations necessary to make the Bezier curves. 
+    From Ryan Catalani: https://ryancatalani.medium.com/?p=dc7188db24b4 */
+
+    var latlng1 = Object.values(rData[0]);
+    var latlng2 = Object.values(rData[1]);
+
+    var offsetX = latlng2[1] - latlng1[1],
+        offsetY = latlng2[0] - latlng1[0];
+
+    var r = Math.sqrt( Math.pow(offsetX, 2) + Math.pow(offsetY, 2) ),
+        theta = Math.atan2(offsetY, offsetX);
+
+    var thetaOffset = (3.14/10);
+
+    var r2 = (r/2)/(Math.cos(thetaOffset)),
+        theta2 = theta + thetaOffset;
+
+    var midpointX = (r2 * Math.cos(theta2)) + latlng1[1],
+        midpointY = (r2 * Math.sin(theta2)) + latlng1[0];
+
+    var midpointLatLng = [midpointY, midpointX];
+
+    /* Color the polyline based on the sector from */
+    var sectorFrom = results.result[0].sector_from;
+    var lineColor = colorDict[sectorFrom];
+
+    /* Size the width of the polyline based on the sector's emission intensity.
+    Emission intensity is proportional to the query value over the highest value for
+    that stressor. The log of both is used to reduce the distance between the two values
+    (since stressorMax is a very large value, it always yields a very small value). The
+    lineSize is the maximum value that the line should be (anything bigger and it does
+    not look good visually) */
+
+    var stressorMax = maxVals[stressor];
+    var stressorRatio =  Math.log(value)/Math.log(stressorMax);
+    var lineSize = 29
+    var lineWeight = 1 + lineSize*stressorRatio
+
+    var pathOptions = {
+        color:  lineColor,
+        weight: lineWeight
+    }
+
+    var curvedPath = lyrGroup.addLayer(L.curve(
+        [
+            'M', latlng1,
+            'Q', midpointLatLng,
+                latlng2
+        ], pathOptions))
+        .arrowheads({size: '20px',
+                    yawn: 55,
+                    fill: true})
+        .addTo(map);
+    
+    return curvedPath
+
+} 
+
+function markerIcon (start, pop) {
+
+    /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
+    with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
+    designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
+    since the midpoint is assumed to be in the middle of the bottom edge of the icon.  */
+
+    var newMarker = L.icon({iconUrl: 'images/marker.svg', 
+                            iconSize: [24, 30], 
+                            iconAnchor: [15, 30]});
+
+    lyrGroup.addLayer(L.marker(start, {icon: newMarker})
+            .bindPopup(pop).addTo(map));
+
+    var newmap = map.setView(start, zoom=5);
+
+    return newmap
+}
 
 document.getElementById('api-form').addEventListener('submit', async function (e){
     e.preventDefault(); 
 
-    getResults();
-    makeArrow();
-    createTable();
+    var results  = await getResults();
+    var rData    = await regionalData();
+    var pop      = setPopUp(results);
+
+    var start = rData[0];
+    var end   = rData[1];
+
+    if (start === end) {
+        markerIcon(start, pop);
+
+    } else {
+        makePolyline(rData, results);
+    }
 
 })
 
