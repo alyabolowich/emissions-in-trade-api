@@ -4,7 +4,8 @@
 const apiURL = 'http://api.emissionsintrade.com/v1/'
 
 // add basemap layer
-var map = L.map('map').setView({lat: 51.5, lon: 11}, 3);   //Set center coordinates and zoom level (3)
+var map = L.map('map')
+           .setView({lat: 51.5, lon: 11}, 3);   //Set center coordinates and zoom level (3)
 var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 L.tileLayer(tileURL, {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
@@ -14,7 +15,7 @@ L.tileLayer(tileURL, {
 // add layer group
 var lyrGroup = L.layerGroup().addTo(map);
  
-// Color arrow depending on sector
+// Match a sector to a color (used to color polylines)
 var colorDict = {"accommodation_and_food_services": "blue", 
                 "agriculture": "red",
                 "construction": "green",
@@ -176,7 +177,7 @@ async function regionalData(){
             var arrayLatLon  = latlondata.result;
             //console.log([formData.regionTo, formData.regionFrom]);
             //console.log(arrayLatLon);
-            var geographicData = await getLatLon(arrayLatLon, [formData.regionTo, formData.regionFrom]);
+            var geographicData = getLatLon(arrayLatLon, [formData.regionTo, formData.regionFrom]);
             //console.log(geographicData);
             //console.log(typeof geographicData);
 
@@ -283,8 +284,9 @@ function makePolyline (rData, results) {
     var value    = results.result[0].val;
     var stressor = formData.stressor;
 
-    /* Calculations necessary to make the Bezier curves. 
-    From Ryan Catalani: https://ryancatalani.medium.com/?p=dc7188db24b4 */
+    /* Calculations necessary to make the Bezier curves that follow
+    the curvature of the Earth. From Ryan Catalani: 
+    https://ryancatalani.medium.com/?p=dc7188db24b4 */
 
     var latlng1 = Object.values(rData[0]);
     var latlng2 = Object.values(rData[1]);
@@ -313,33 +315,61 @@ function makePolyline (rData, results) {
     Emission intensity is proportional to the query value over the highest value for
     that stressor. The log of both is used to reduce the distance between the two values
     (since stressorMax is a very large value, it always yields a very small value). The
-    lineSize is the maximum value that the line should be (anything bigger and it does
+    lineSize is the maximum value (30 pixels) that the line should be (anything bigger and it does
     not look good visually) */
 
     var stressorMax = maxVals[stressor];
     var stressorRatio =  Math.log(value)/Math.log(stressorMax);
-    var lineSize = 29
+    var lineSize = 30
     var lineWeight = 1 + lineSize*stressorRatio
 
     var pathOptions = {
         color:  lineColor,
-        weight: lineWeight
+        weight: lineWeight,
     }
 
     var curvedPath = lyrGroup.addLayer(L.curve(
         [
             'M', latlng1,
             'Q', midpointLatLng,
-                latlng2
-        ], pathOptions))
-        .arrowheads({size: '20px',
-                    yawn: 55,
-                    fill: true})
-        .addTo(map);
-    
-    return curvedPath
+                 latlng2
+        ], pathOptions)).addTo(map);
+
+    map.fitBounds(L.latLngBounds(latlng1, latlng2));
+    //console.log(curvedPath);
+
+    /* Adding arrowheads is not directly possible with leaflet.curve. 
+    To get aroudn this, you need to make a "ghost" polyline with an 
+    arrowhead and then remove the polyline but keep the arrowhead.  
+    https://github.com/slutske22/leaflet-arrowheads/issues/ */ 
+/*
+    var addArrowheads = curvedPath.trace([0, 0, 0, 0.9])
+    var ghost =  lyrGroup.addLayerL.polyline(addArrowheads).arrowheads({color: lineColor}).addTo(map);
+    var arrowheads = ghost.getArrowheads();
+    lyrGroup.ghost.remove();
+    var arrows = lyrGroup.addLayer(arrowheads).addTo(map); */
+
+    return curvedPath, arrows
 
 } 
+
+/*
+function addArrowheads (){
+    var curve = curvedPath(rData, results);
+    var addArrowheads = curve.trace([0, 0.9])
+
+    console.log(curvedPath);
+    console.log(addArrowheads);
+
+    var ghost =  lyrGroup.addLayer(L.polyline(addArrowheads).arrowheads({color: lineColor, size: '15000m'})).addTo(map);
+    var arrowheads = ghost.getArrowheads();
+    ghost.remove();
+    var arrows = arrowheads.addTo(map);
+
+    return arrows
+}
+*/
+
 
 function markerIcon (start, pop) {
 
@@ -375,6 +405,7 @@ document.getElementById('api-form').addEventListener('submit', async function (e
 
     } else {
         makePolyline(rData, results);
+
     }
 
 })
