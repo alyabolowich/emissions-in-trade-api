@@ -5,7 +5,8 @@ const apiURL = 'http://api.emissionsintrade.com/v1/'
 
 // add basemap layer
 var map = L.map('map')
-           .setView({lat: 51.5, lon: 11}, 3);   //Set center coordinates and zoom level (3)
+           .setView({lat: 51.5, lon: 11}, 3)
+           .setMinZoom(2);   //Set center coordinates and zoom level (3)
 var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 L.tileLayer(tileURL, {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
@@ -278,7 +279,7 @@ function createTable(results){
 }
 
 function makePolyline (rData, results) {
-    deleteLayers();
+    
 
     var formData = readData();
     var value    = results.result[0].val;
@@ -353,6 +354,7 @@ function makePolyline (rData, results) {
 
 } 
 
+
 /*
 function addArrowheads (){
     var curve = curvedPath(rData, results);
@@ -370,9 +372,8 @@ function addArrowheads (){
 }
 */
 
-
 function markerIcon (start, pop) {
-
+    deleteLayers();
     /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
     with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
     designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
@@ -385,29 +386,70 @@ function markerIcon (start, pop) {
     lyrGroup.addLayer(L.marker(start, {icon: newMarker})
             .bindPopup(pop).addTo(map));
 
-    var newmap = map.setView(start, zoom=5);
+    var newmap = map.setView(start, zoom=6);
 
     return newmap
 }
+/* The following two functions will either show the map or the table.
+They work in the same way. First, hide the element we do not want to 
+view (display = 'none'). Second, the element we do want to display will
+be displayed in line. The difference between display and visible here:
+https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_style_display2 */
 
-document.getElementById('api-form').addEventListener('submit', async function (e){
-    e.preventDefault(); 
-
-    var results  = await getResults();
-    var rData    = await regionalData();
-    var pop      = setPopUp(results);
-
-    var start = rData[0];
-    var end   = rData[1];
-
-    if (start === end) {
-        markerIcon(start, pop);
-
-    } else {
-        makePolyline(rData, results);
-
+/* Hide the table */ 
+function viewMap() {
+    var mapBtn = document.getElementById('map-btn');
+    mapBtn.onclick = function() {
+        var infoTable = document.getElementById('info-table');
+        infoTable.style.display = 'none';
+        var showMap = document.getElementById('map');
+        showMap.style.display= 'block';
+        console.log("Table hidden - map shown")
     }
+}
 
-})
+/* Hide the map */
+function viewTable(results) {
+    var tableBtn = document.getElementById('table-btn');
+    tableBtn.onclick = function() {
+        var showMap = document.getElementById('map');
+        showMap.style.display = 'none';
+        var infoTable = document.getElementById('info-table');
+        infoTable.style.display= 'block';
+        console.log("Map hidden - table shown");
+    }  
+    createTable(results);
+}   
+
+
+function getFormData(){
+    document.getElementById('api-form').addEventListener('submit', async function (e){
+        e.preventDefault(); 
+        deleteLayers();
+        
+        var results  = await getResults();
+        var rData    = await regionalData();
+        var pop      = setPopUp(results);
+
+        var start = rData[0];
+        var end   = rData[1];
+        
+        viewTable(results);
+        viewMap();
+
+        if (start === end) {
+            markerIcon(start, pop);
+    
+        } else {
+            //markerIcon(start, pop);  // need to add rFrom and make it go to rFrom instead
+            makePolyline(rData, results);
+        } 
+
+
+    })
+}
+
+getFormData();
+
 
 
