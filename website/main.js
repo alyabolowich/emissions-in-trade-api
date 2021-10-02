@@ -1,4 +1,5 @@
 
+
 // ** GLOBALS ** //
 
 const apiURL = 'http://api.emissionsintrade.com/v1/'
@@ -109,6 +110,7 @@ function layerStart(){
     //console.log('Map has', qq, 'layers at start.');
 }
 layerStart();
+
 
 // Count layers
 function countLayers() {
@@ -279,7 +281,6 @@ function createTable(results){
 }
 
 function makePolyline (rData, results) {
-    
 
     var formData = readData();
     var value    = results.result[0].val;
@@ -291,6 +292,8 @@ function makePolyline (rData, results) {
 
     var latlng1 = Object.values(rData[0]);
     var latlng2 = Object.values(rData[1]);
+    console.log("latlng1:" + latlng1);
+    console.log("latng2:" +latlng2);
 
     var offsetX = latlng2[1] - latlng1[1],
         offsetY = latlng2[0] - latlng1[0];
@@ -322,7 +325,7 @@ function makePolyline (rData, results) {
     var stressorMax = maxVals[stressor];
     var stressorRatio =  Math.log(value)/Math.log(stressorMax);
     var lineSize = 30
-    var lineWeight = 1 + lineSize*stressorRatio
+    var lineWeight = lineSize * stressorRatio
 
     var pathOptions = {
         color:  lineColor,
@@ -331,9 +334,9 @@ function makePolyline (rData, results) {
 
     var curvedPath = lyrGroup.addLayer(L.curve(
         [
-            'M', latlng1,
-            'Q', midpointLatLng,
-                 latlng2
+            'M', latlng2, //move to
+            'Q', midpointLatLng, //quadratic curve - ctrl pt at the midpoint
+                 latlng1 
         ], pathOptions)).addTo(map);
 
     map.fitBounds(L.latLngBounds(latlng1, latlng2));
@@ -350,27 +353,63 @@ function makePolyline (rData, results) {
     lyrGroup.ghost.remove();
     var arrows = lyrGroup.addLayer(arrowheads).addTo(map); */
 
-    return curvedPath, arrows
-
+    return curvedPath
 } 
 
+function swoops(rData, results) {
+    var formData = readData();
+    var value    = results.result[0].val;
+    console.log('results.result[0] value: ' + value)
 
-/*
-function addArrowheads (){
-    var curve = curvedPath(rData, results);
-    var addArrowheads = curve.trace([0, 0.9])
+    var latlng1 = Object.values(rData[0]);
+    var latlng2 = Object.values(rData[1]);
+
+    //console.log("latlng1:" + latlng1);
+    //console.log("latng2:" +latlng2);
+
+    // Get color of line
+    var sectorFrom = results.result[0].sector_from;
+    var lineColor = colorDict[sectorFrom];
+
+    // Get weight of line
+    var stressor = formData.stressor;
+    var stressorMax = maxVals[stressor];
+    var stressorRatio =  Math.log(value)/Math.log(stressorMax);
+    console.log('str ratio: ' + stressorRatio)
+    var lineSize = 3.5
+    var lineWeight = lineSize*(1+stressorRatio)
+
+    const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+        iconAnchor: [20, 10],
+        iconSize: [20, 16],
+        color: lineColor,
+        arrowFilled: true,
+        weight: lineWeight
+    })).addTo(map);
+    
+    map.fitBounds(L.latLngBounds(latlng1, latlng2));
+    
+}
+
+function addArrowheads (rData, results){
+
+    var latlng1 = Object.values(rData[0]);
+    var latlng2 = Object.values(rData[1]);
+    var data = [latlng1, latlng2]
+    var curve = makePolyline(data, results); //was curvedPath
+    var addArrowhead = curve.trace([1])
 
     console.log(curvedPath);
-    console.log(addArrowheads);
+    console.log(addArrowhead);
 
-    var ghost =  lyrGroup.addLayer(L.polyline(addArrowheads).arrowheads({color: lineColor, size: '15000m'})).addTo(map);
+    var ghost =  L.polyline(addArrowhead).arrowheads({color: lineColor, size: '15000m'}).addTo(map);
     var arrowheads = ghost.getArrowheads();
     ghost.remove();
-    var arrows = arrowheads.addTo(map);
+    var arrows = lyrGroup.addLayer(arrowheads.addTo(map));
 
     return arrows
 }
-*/
+
 
 function markerIcon (start, pop) {
     deleteLayers();
@@ -397,7 +436,7 @@ be displayed in line. The difference between display and visible here:
 https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_style_display2 */
 
 /* Hide the table */ 
-function viewMap() {
+async function viewMap(results, rData, pop) {
     var mapBtn = document.getElementById('map-btn');
     mapBtn.onclick = function() {
         var infoTable = document.getElementById('info-table');
@@ -406,6 +445,18 @@ function viewMap() {
         showMap.style.display= 'block';
         console.log("Table hidden - map shown")
     }
+    var start = rData[0];
+    var end   = rData[1];
+
+    if (start === end) {
+        markerIcon(start, pop);
+    } else {
+        //markerIcon(start, pop);  // need to add rFrom and make it go to rFrom instead
+        //makePolyline(rData, results);
+        //addArrowheads(rData, results);
+        swoops(rData, results);
+
+    } 
 }
 
 /* Hide the map */
@@ -426,30 +477,16 @@ function getFormData(){
     document.getElementById('api-form').addEventListener('submit', async function (e){
         e.preventDefault(); 
         deleteLayers();
-        
+
         var results  = await getResults();
         var rData    = await regionalData();
         var pop      = setPopUp(results);
 
-        var start = rData[0];
-        var end   = rData[1];
-        
         viewTable(results);
-        viewMap();
-
-        if (start === end) {
-            markerIcon(start, pop);
-    
-        } else {
-            //markerIcon(start, pop);  // need to add rFrom and make it go to rFrom instead
-            makePolyline(rData, results);
-        } 
-
+        viewMap(results, rData, pop);
 
     })
 }
 
 getFormData();
-
-
 
