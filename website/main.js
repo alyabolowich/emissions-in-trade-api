@@ -1,5 +1,4 @@
 
-
 // ** GLOBALS ** //
 
 const apiURL = 'http://api.emissionsintrade.com/v1/'
@@ -75,14 +74,9 @@ async function loadRegions() {
     }); 
 
     for (let country of data.result) { //data.result is an array
-        //console.log(country.region_name);
-
         options += `<option value="${country.region_id}">${country.region_name}</option>`;
-        //var lat = country.region_lat
-        //var lon = country.region_lon
-        //console.log(lat,lon)
-        
     }
+
     document.getElementById("region-from").innerHTML=options;
     document.getElementById("region-to").innerHTML=options;
 }
@@ -132,10 +126,19 @@ function deleteLayers(){
 
 function readData() {
     var stressor   = document.getElementById('stressor').value;
-    var regionTo   = document.getElementById('region-to').value;
-    var regionFrom = document.getElementById('region-from').value;
-    var sectorFrom = document.getElementById('sector-from').value;
-    var sectorTo   = document.getElementById('sector-to').value;
+
+    var regionFrom  = Array.from(document.querySelectorAll('#region-from > option:checked'),
+    ({value}) => value
+    );
+    var regionTo    = Array.from(document.querySelectorAll('#region-to > option:checked'),
+    ({value}) => value
+    );
+    var sectorFrom  = Array.from(document.querySelectorAll('#sector-from > option:checked'),
+    ({value}) => value
+    );
+    var sectorTo   = Array.from(document.querySelectorAll('#sector-to > option:checked'),
+    ({value}) => value
+    );
 
     return {
         "stressor": stressor,
@@ -154,72 +157,105 @@ async function getResults() {
     try {
         const response = await fetch(endpoint);
         const data     = await response.json();
-        //console.log("this is data from getResults");
-        //console.log(data);
-        var data1 = data;
         return data;
 
 
     } catch {
-        console.log("Error in API request"); 
+        console.log("Error in the API request"); 
     }
 }
 
 
 async function regionalData(){
     formData = readData();
-    //console.log(formData);
-
+// Before modification - returned an object dict {0:[lat:, lon:], 1: [lat:, lon:]}
     var regionURL = apiURL+"regions";
 
         try {
             const response = await fetch(regionURL);
-            //console.log(regionURL);
-            //console.log("regionLatLon fetched");
             const latlondata = await response.json();
+
+            // arrayLatLon will return an array nested with dicts of all the regions $ their lats/longs
             var arrayLatLon  = latlondata.result;
-            //console.log([formData.regionTo, formData.regionFrom]);
-            //console.log(arrayLatLon);
             var geographicData = getLatLon(arrayLatLon, [formData.regionTo, formData.regionFrom]);
             //console.log(geographicData);
-            //console.log(typeof geographicData);
-
+            
             return geographicData;
         } catch {
-            console.log("Error in API request");
+            console.log("Error parsing the location data");
     }              
 }
 
-function getLatLon(latlondata, regions){
-    // Get the latitude and longitude of the regions to/from.
+function getLatLon(latlondata, regions) {
+    // Get the latitude and lon]gitude of the regions to/from.
+    // latlondata will be the arrayLatLon from the regionalData() func. This will be an array nested with dicts of all regions & their lat/longs
+    formData = readData();
     var regionsLatLon = {}
+
+    //console.log(regions); //retuns an array of nested arrays [[rTo = 'bg', 'be'], [rFrom = 'de']]
+    // Iterate over the array of all regions selected
     for (var i=0; i<regions.length; i++) {
-        for (var j=0; j<latlondata.length; j++) {
-            if (latlondata[j].region_id === regions[i]) {
-                // Get an object of the region lat and lons
-                regionsLatLon[regions[i]] = {'lat':latlondata[j].region_lat,
-                                            'lon':latlondata[j].region_lon}
+        for (var l=0; l<regions[i].length; l++){
+        //console.log(regions[i][l])
+        //console.log(regions[1][0]); //gets first element of the regionFrom array
+        // Iterate over all the regions in the array (in this case 29 regions)
+            for (var j=0; j<latlondata.length; j++) {
+                // If the regionID from the large array matches the one of the selected regions, then get the lat and lon of that region
+                // Check if the regions 
+                if (latlondata[j].region_id === regions[i][l]) {
+                    // Get an object of the region lat and lons
+                    regionsLatLon[regions[i][l]] = {'lat':latlondata[j].region_lat,
+                                                    'lon':latlondata[j].region_lon}
+                    //console.log(regionsLatLon)
+                }
+            }
+        }
+    }
+    
+    // console.log(regionsLatLon); // returns nested dict of regions, but not specifies which is rTo and which is rFrom
+    // console.log(Object.keys(regionsLatLon));
+    // console.log(formData.regionTo);
+/* 
+    for (var m in Object.keys(regionsLatLon)) {
+        console.log(Object.keys(regionsLatLon)[m])
+    }
+
+    for (var n in formData.regionTo) {
+        console.log(formData.regionTo[n])
+    } */
+
+    regionToLatLon = []
+    for (var m in Object.keys(regionsLatLon)) {
+        for (var n in formData.regionTo) {
+            if (Object.keys(regionsLatLon)[m] === formData.regionTo[n]){
+                regionToLatLon.push(Object.values(regionsLatLon)[m])
+
+            }
+        }
+    }
+    //console.log(regionToLatLon)
+
+    regionFromLatLon = []
+    for (var m in Object.keys(regionsLatLon)) {
+        for (var n in formData.regionFrom) {
+            if (Object.keys(regionsLatLon)[m] === formData.regionFrom[n]){
+                regionFromLatLon.push(Object.values(regionsLatLon)[m])
+
             }
         }
     }
 
-    //console.log(regionsLatLon);
-    //console.log(Object.keys(regionsLatLon).length);
-    
     /* if rTo===rFrom, regionsLatLon only returns 1 data point. A duplicate of that region
     is needed for the map.  */ 
     if (Object.keys(regionsLatLon).length === 1) {
         var regionToLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-        var regionFromLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-    } else {
-        var regionToLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-        var regionFromLatLon = [regionsLatLon[Object.keys(regionsLatLon)[1]]];
-    }
-     
-    var fromToLatLon     = [...regionFromLatLon, ...regionToLatLon];
+        var regionFromLatLon = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
+    } 
 
+    //console.log(regionFromLatLon)
+    var fromToLatLon = [...regionFromLatLon, ...regionToLatLon];
+    //console.log(fromToLatLon)
     return fromToLatLon;
-
 }
 
 
@@ -284,6 +320,7 @@ function makePolyline (rData, results) {
 
     var formData = readData();
     var value    = results.result[0].val;
+    console.log(value)
     var stressor = formData.stressor;
 
     /* Calculations necessary to make the Bezier curves that follow
@@ -484,9 +521,9 @@ function getFormData(){
 
         viewTable(results);
         viewMap(results, rData, pop);
-
-    })
+        console.log(results);
+        console.log(rData);
+        })
 }
 
 getFormData();
-
