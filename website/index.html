@@ -18,7 +18,7 @@
     <!-- Leaflet-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-  
+
     
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
@@ -31,30 +31,29 @@
 
 <body>
     <!-- navbar -->
-    <div>
-        <div class="container">
-            <nav class="navbar navbar-expand-lg">
-                <a class="navbar-brand" href="#"> 
-                    Emissions in Trade
-                    <img class="logo" src="images/logo.svg" alt="Logo"/>
-                </a>                
-
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#Navbar"> <!-- this btn triggers the showing/hiding of the navbar div below-->
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div>
-                        <ul class="navbar-nav" id="">
-                            <li class="nav-item">
-                                <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">Access the data</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="pages/io.html">About</a>
-                            </li>
-                        </ul>
-                    </div>
-            </nav>
-        </div>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg">
+            <img class="logo" src="images/logo.svg" alt="Logo"/>            
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#Navbar"> <!-- this btn triggers the showing/hiding of the navbar div below-->
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div>
+                    <ul class="navbar-nav" id="">
+                        <li class="nav-item">
+                            <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">Access the data</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="pages/io.html">About</a>
+                        </li>
+                    </ul>
+                </div>
+        </nav>
+        <header class="container" id="jumbotron">
+                <h1 class="jtron-header">Emissions in Trade</h1>
+                <p> Get emissions data by sector or region </p>
+        </header>
     </div>
+
 
 <!-- Default switch -->
 
@@ -79,19 +78,19 @@
             </div>
             <div class="form-group col-8" id="userInput">
                 <label for="region-from">Region from</label> 
-                <select class="form-control" id="region-from"></select>
+                <select class="form-control" id="region-from" multiple></select>
             </div>
             <div class="form-group col-8" id="userInput">
                 <label for="region-to">Region to</label>
-                <select class="form-control" id="region-to"></select>
+                <select class="form-control" id="region-to" multiple></select>
             </div>
             <div class="form-group col-8" id="userInput">
                 <label for="sector-from">Sector from</label>
-                <select class="form-control" id="sector-from"></select>
+                <select class="form-control" id="sector-from" multiple></select>
             </div>
             <div class="form-group col-8" id="userInput">
                 <label for="sector-to">Sector to</label>
-                <select class="form-control" id="sector-to"></select>
+                <select class="form-control" id="sector-to" multiple></select>
             </div>
             <button type="submit" class="btn btn-outline-dark" id="submit-button"> Submit </button>
         </form>
@@ -104,7 +103,14 @@
             </div>
         </div>
     </div>  
-
+    <svg width="600px" height="200px" id="svg">
+        <defs>
+             <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" 
+               orient="auto" markerUnits="strokeWidth">
+               <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+             </marker>
+        </defs>
+    </svg>
 
     
     <!-- create a table -->
@@ -176,11 +182,14 @@
     <script src="leaflet-curve.js"></script>
     <script src="geometry-util.js"></script>
     <script src="leaflet-arrowheads.js"></script>
+    <script src="leaflet-swoopy.js"></script>
 
 
     <!-- main -->
-    <script src="main.js"></script>
+    <script src="main2.js"></script>
+    <script src="testimport.js" type="module"></script>
 
+    
 
 </body> 
 </html>
