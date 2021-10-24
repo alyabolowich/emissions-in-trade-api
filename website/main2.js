@@ -57,7 +57,6 @@ async function loadStressors() {
     document.getElementById("stressor").innerHTML=options;
 }
 
-
 // Load regions
 async function loadRegions() {
     const response = await fetch(apiURL+'regions');
@@ -98,7 +97,6 @@ async function loadSectors() {
     document.getElementById("sector-from").innerHTML=options;
     document.getElementById("sector-to").innerHTML=options;
 }
-
 
 // Check how many Leaflet layers at start
 function layerStart(){
@@ -280,7 +278,7 @@ function createTable(userData){
         table.innerHTML += row;
     }
 }
-
+// LINEFACTOR NOT YET IN USE
 function lineFactor(userData) {  
     console.log(userData);
 
@@ -320,19 +318,18 @@ function bboxLatLng(userData) {
         removeDuplicates[arr.join(",")] = arr;
     });
 
-    console.log(removeDuplicates);
+    //console.log(removeDuplicates);
     var bndsOnce = Object.keys(removeDuplicates).map(function(i) {
         return removeDuplicates[i]
-    })
+    });
 
-    console.log(bndsOnce)
+    //console.log(bndsOnce)
     return bndsOnce
 }
 
 function swoops(userData, pop, bounds) {
     var formData = readData();
-    // value returns the value of the stressor 
-    //console.log(userData);
+    console.log(userData)
 
     for (var i=0; i < userData.length; i++ ){
         var value   = userData[i].val;
@@ -341,42 +338,48 @@ function swoops(userData, pop, bounds) {
 
         console.log(Object.keys(userData).length);
 
+        var sectorFrom = userData[i].sector_from;
+        var lineColor  = colorDict[sectorFrom];
+
+        // Get weight of line
+        var stressor = formData.stressor;
+        var stressorMax = maxVals[stressor];
+        var stressorRatio =  Math.log(value)/Math.log(stressorMax);
+        var lineSize = 15
+        var lineWeight = lineSize*stressorRatio
+
+        //console.log(typeof(userData[i].region_from));
+        // Compare strings if region_from is row. 
+
+
         if (userData[i].region_from === userData[i].region_to) {
             region = userData[i].coords_from;
             markerIcon(region, pop);
 
-        } else {
-            var sectorFrom = userData[i].sector_from;
-            var lineColor = colorDict[sectorFrom];
-    
-            // Get weight of line
-            var stressor = formData.stressor;
-            var stressorMax = maxVals[stressor];
-            var stressorRatio =  Math.log(value)/Math.log(stressorMax);
-            var lineSize = 15
-            var lineWeight = lineSize*stressorRatio
-    
+            // When region_from = ROW, print "rest of the world" at the end of the polyline
+            // so it is clear to the user where this arrow is "coming from"
+        } else if (userData[i].region_from === "row") {
             const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
-                // these are all the swoopy options
-                iconAnchor: [20, 10],
-                iconSize: [20, 16],
+                iconAnchor: [35, -15],  // Adjust html test positioning
+                color: lineColor,       // Color polyline and arrowhead
+                arrowFilled: true,
+                factor: 0.5,            // Control the bend of the arrow
+                weight: lineWeight,     // Change polyline weight 
+                html: 'Rest of the world' // Include as explanation for the ROW region_from
+            })).addTo(map);
+        } else {
+            const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
                 color: lineColor,
                 arrowFilled: true,
-                //factor: 0.9,
-                weight: lineWeight,    //THIS ONLY CHANGES THE ARROWHEAD
-                keyboard: false
+                factor: 0.5,
+                weight: lineWeight,   
             })).addTo(map);
-
-            
-            // Need to fitbounds a different way -- this will only fit to one and not all the bounds (ex only Lux to ROW and not Lux to Blg)
-            map.fitBounds(L.latLngBounds(bounds));
         }
+
+        // Accepts the bounds from the bboxLatLng function and bounds around all polyines
+        map.fitBounds(L.latLngBounds(bounds));
         
     }
-
-    console.log(stressorRatio );
-    //console.log("latlng1:" + latlng1);
-    //console.log("latng2:" + latlng2);
 }
 
 function markerIcon (region, pop) {
