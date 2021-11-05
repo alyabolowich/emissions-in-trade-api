@@ -30,100 +30,96 @@
 
 
 <body>
-    <!-- navbar -->
+    <!-- Navbar -->
+
     <div class="container">
         <nav class="navbar navbar-expand-lg">
             <img class="logo" src="images/logo.svg" alt="Logo"/>            
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#Navbar"> <!-- this btn triggers the showing/hiding of the navbar div below-->
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#Navbar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div>
-                    <ul class="navbar-nav" id="">
+                    <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">Access the data</a>
+                            <a class="nav-link" href="http://api.emissionsintrade.com/v1" target="_blank">Access the data  
+                                <i class="fa fa-external-link fa-xs" aria-hidden="true"></i>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="pages/io.html">About</a>
+                            <a class="nav-link" href="pages/about.html">About</a>
                         </li>
                     </ul>
                 </div>
         </nav>
-        <header class="container" id="jumbotron">
-                <h1 class="jtron-header">Emissions in Trade</h1>
-                <p> Get emissions data by sector or region </p>
-        </header>
+    </div>
+    <div class="container" id="jumbotron">
+        <h1 class="jtron-header">Emissions in Trade</h1>
+        <p> Get emissions data by sector or region </p>
+    </div>
+
+    
+
+    <!-- Toggle switch between View Map and View Table options -->
+    <div class="container" id="btn-toggle">
+        <div class="toggle-switch btn-group">
+            <div class="text-center">
+                <button type="button" class="btn active" id="map-btn">View map only </button>
+                <button type="button" class="btn" id="table-btn" >View table only</button>
+            </div>
+        </div>
     </div>
 
 
-<!-- Default switch -->
 
-    <div class="toggle-switch btn-group">
-        <button type="button" class="btn active" id="map-btn">View Map </button>
-        <button type="button" class="btn" id="table-btn" >View Table</button>
-    </div>
-
-
-    <!-- form -->
+    <!-- User input form -->
     <div class="container">
-        <form id="api-form" class="needs-validation" novalidate>  
-            <div class="form-group col-8" id="userInput">
-                <label for="stressor" class="form-label">Stressor (required)</label> 
-                <select class="form-control" id="stressor">     
-                    <option selected disabled value=""> -- Select a Stressor -- </option>
-                    <div class="invalid-feedback"> Please select a stressor</div>
-                </select>   
-            </div>
-            <div>
+        <form id="api-form" class="needs-validation">  
+            <div class="row" id="form-row"> 
+                <div class="form-group col-md-6" id="userInput">
+                    <label for="stressor" class="form-label">Stressor</label> 
+                    <select class="form-control" id="stressor" required>     
+                        <option selected disabled value=""> -- Select a Stressor -- </option>
+                    </select>   
+                </div>
                 <p style="padding-top: 15px;"> You must select at least one of the following:</p>
-            </div>
-            <div class="form-group col-8" id="userInput">
-                <label for="region-from">Region from</label> 
-                <select class="form-control" id="region-from" multiple></select>
-            </div>
-            <div class="form-group col-8" id="userInput">
-                <label for="region-to">Region to</label>
-                <select class="form-control" id="region-to" multiple></select>
-            </div>
-            <div class="form-group col-8" id="userInput">
-                <label for="sector-from">Sector from</label>
-                <select class="form-control" id="sector-from" multiple></select>
-            </div>
-            <div class="form-group col-8" id="userInput">
-                <label for="sector-to">Sector to</label>
-                <select class="form-control" id="sector-to" multiple></select>
+                <div class="form-group col-md-6" id="userInput">
+                    <label for="region-from">Region from</label> 
+                    <select class="form-control" id="region-from" multiple required></select>
+                </div>
+                <div class="form-group col-md-6" id="userInput">
+                    <label for="region-to">Region to</label>
+                    <select class="form-control" id="region-to" multiple required></select>
+                </div>
+                <div class="form-group col-md-6" id="userInput">
+                    <label for="sector-from">Sector from</label>
+                    <select class="form-control" id="sector-from" multiple required></select>
+                </div>
+                <div class="form-group col-md-6" id="userInput">
+                    <label for="sector-to">Sector to</label>
+                    <select class="form-control" id="sector-to" multiple required></select>
+                </div>
             </div>
             <button type="submit" class="btn btn-outline-dark" id="submit-button"> Submit </button>
         </form>
     </div>
 
-    <!-- map -->
-    <div class="container">
-        <div class="col-8">
-            <div id="map">
-            </div>
-        </div>
+    <!-- map FILL TO FULL CONTAINER WIDTH-->
+    <div class="container-md">
+        <div id="map"></div>
     </div>  
-    <svg width="600px" height="200px" id="svg">
-        <defs>
-             <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" 
-               orient="auto" markerUnits="strokeWidth">
-               <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
-             </marker>
-        </defs>
-    </svg>
-
+    <!-- if any issues, I removed an <svg> tag -- can find it in github if needed -->
     
-    <!-- create a table -->
+    <!-- create table to show on webpage-->
     <div class="container">
         <div class="col-8">
             <!-- populate table with endpoint data here -->
             <table class="table table-bordered" id="info-table">
                 <thead id="results-table-header">
                     <tr>
-                        <th scope="col">Region to</th>
                         <th scope="col">Region from</th>
-                        <th scope="col">Sector to</th>
+                        <th scope="col">Region to</th>
                         <th scope="col">Sector from</th>
+                        <th scope="col">Sector to</th>
                         <th scope="col">Value</th>
                         <th scope="col">Unit</th>
                     </tr>
@@ -133,6 +129,19 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- create table to show in popup-->
+    <div class="row" id="pop-up-container" >
+        <table id="pop-up-table" class="table" cellspacing="10">
+            <th scope="col">Region</th>
+            <th scope="col">Sector From</th>
+            <th scope="col">Sector to</th> 
+            <th scope="col">Value</th> 
+            <th scope="col">Unit</th> 
+        <tbody id="results-pop-up-body">
+        </tbody>
+        </table>
     </div>
 
 
@@ -145,11 +154,11 @@
                     <h4>Links</h4>
                         <p><a href="#top">Top</a></p>
                         <p><a href="http://api.emissionsintrade.com/v1" target="_blank">Access the Data</a></p>
-                        <p><a href="pages/io.html">About</a></p>
+                        <p><a href="pages/about.html">About</a></p>
                     </ul>
             </div>
         </div>
-        <div class="text-center">
+        <div class="text-center" id="made-by">
             <div class="row"> 
                 <p class="made-by"> Made by Alya Bolowich </p>
             </div>
