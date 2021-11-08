@@ -111,7 +111,7 @@
     
     <!-- create table to show on webpage-->
     <div class="container">
-        <div class="col-8">
+        <div class="table-responsive">
             <!-- populate table with endpoint data here -->
             <table class="table table-bordered" id="info-table">
                 <thead id="results-table-header">
@@ -132,8 +132,8 @@
     </div>
 
     <!-- create table to show in popup-->
-    <div class="row" id="pop-up-container" >
-        <table id="pop-up-table" class="table" cellspacing="10">
+    <div class="row" id="pop-up-container" style="visibility: hidden">
+        <table class="table table-bordered" id="pop-up-table" >
             <th scope="col">Region</th>
             <th scope="col">Sector From</th>
             <th scope="col">Sector to</th> 
@@ -196,7 +196,6 @@
 
     <!-- main -->
     <script src="main2.js"></script>
-    <script src="testimport.js" type="module"></script>
 
     
 

@@ -1,92 +1,142 @@
+/* General CSS */
 body {
-    background-color: #ffffff;
-    color: #1e2744;
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
+  background-color: #ffffff;
+  color: #1e2744;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, sans-serif;
 }
 
 .container {
-    align-items: center;
-}
-nav {
-    height: 150px;
-    background-color: #ffffff ;
-    display: flex;
-    justify-content: space-around !important;
-    color: #1e2744;
-    align-items: bottom;
-    border-bottom: 2px solid #e2866d;
-    font-family: Helvetica;
-}
-
-.nav-link {
-    color: #1e2744;
-}
-
-ul {
-    display: flex;
-}
-
-li {
-    list-style-type: none;
-}
-
-h1 {
-    font-size: 36px; 
-    font-style: bold; 
-    font-variant: normal; 
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
-    font-weight: 100; 
-    display: flex;
-}
-
-#api-form {
-    margin-top: 30px; 
-    color: #1e2744;
-}
-
-#submit-button{
-    margin-top: 10px; 
-    margin-bottom: 20px;
-}
-
-#map { 
-    position:relative;
-    height:500px;
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 150px;
-
-}
-
-.form-control {
-    height: 35px;
-    color: #1e2744;
-}
-
-footer {
-    margin: 0px auto;
-    padding: 20px 0px; 
-    color: #1e2744;
-    display: flex;
-    justify-content: space-around;
-    font-family: Helvetica; 
-
+  align-items: center;
 }
 
 a {
-    color: #1e2744;
-    text-decoration: none;
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, sans-serif; 
-    display: inline;
-    font-size: 14pt;
+  color: #1e2744;
+  text-decoration: none;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, sans-serif;
+  display: inline;
+  font-size: 14pt;
 }
 
-a:hover {
-    color: #1e2744;
-    text-decoration: none;
+/* Navbar CSS */
+nav {
+  height: 75px;
+  background-color: #ffffff;
+  justify-content: space-between !important;
+  color: #1e2744;
+  border-bottom: 1px solid #e2866d;
+  font-family: Helvetica;
+}
+
+.nav-link {
+  color: #1e2744;
+  float: right;
+}
+
+li {
+  list-style-type: none;
+}
+
+h1 {
+  font-size: 36px;
+  font-style: bold;
+  font-variant: normal;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, sans-serif;
+  font-weight: 100;
 }
 
 .logo {
-    height: 80px;
-    margin-right: 30px;
+  height: 50px;
+}
+
+/* Jumbotron CSS */
+#jumbotron {
+  text-align: center;
+}
+
+.jtron-header {
+  text-align: center;
+}
+
+/* Button to toggle map/table view CSS */
+#btn-toggle {
+  padding-top: 40px;
+  padding-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#map-btn {
+  background: white;
+  box-shadow: none !important;
+}
+
+#table-btn {
+  background: white;
+  box-shadow: none !important;
+}
+
+/* Form CSS */
+#api-form {
+  margin-top: 30px;
+  color: #1e2744;
+}
+
+#submit-button {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+#map {
+  position: relative;
+  height: 750px;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 150px;
+}
+
+.form-control {
+  height: 35px;
+  color: #1e2744;
+}
+
+/* Footer CSS */
+footer {
+  margin-top: 15px;
+  padding: 15px;
+  color: #1e2744;
+  background-color: blanchedalmond;
+}
+
+.made-by {
+  text-align: center;
+}
+
+/*   IO.HTML CSS */
+.about-title {
+  font-family: "HelveticaNeue-Light";
+  font-size: 22px;
+  text-align: center;
+  padding-top: 35px;
+  padding-bottom: 15px;
+}
+
+.about-paragraph {
+  margin-left: 150px;
+  margin-right: 150px;
+  font-size: 16px;
+  text-align: justify;
+}
+
+#about-link {
+  font-size: 16px;
+  color: #717ca1;
+}
+
+#about-link:hover {
+  color: #151b30;
+  text-decoration: none;
 }
