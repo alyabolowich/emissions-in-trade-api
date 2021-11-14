@@ -1,10 +1,11 @@
-
 // ** GLOBALS ** //
 
 const apiURL = 'http://api.emissionsintrade.com/v1/'
 
 // add basemap layer
-var map = L.map('map').setView({lat: 51.5, lon: 11}, 3);   //Set center coordinates and zoom level (3)
+var map = L.map('map')
+           .setView({lat: 51.5, lon: 11}, 3)
+           .setMinZoom(2);   //Set center coordinates and zoom level (2)
 var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 L.tileLayer(tileURL, {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
@@ -14,7 +15,7 @@ L.tileLayer(tileURL, {
 // add layer group
 var lyrGroup = L.layerGroup().addTo(map);
  
-// Color arrow depending on sector
+// Match a sector to a color (used to color polylines)
 var colorDict = {"accommodation_and_food_services": "blue", 
                 "agriculture": "red",
                 "construction": "green",
@@ -28,11 +29,12 @@ var colorDict = {"accommodation_and_food_services": "blue",
                 "water_and_waste":"orange"};
 
 var maxVals = {
-    "co2":     4901975988251.285,
-    "economy": 15968584.67,
-    "vl":      424087.81680835114
+    "co2":     4901975988251,
+    "economy": 15968584,
+    "vl":      424087
 };
 
+document.getElementById("info-table").style.visibility="hidden";
 
 // ** FUNCTIONS ** // 
 
@@ -40,7 +42,6 @@ var maxVals = {
 async function loadStressors() {
     const response = await fetch(apiURL+'stressors');
     const data = await response.json();
-    console.log("STRESSORS");
     
     var options = ""; //<option> -- Select stressor --</option>
 
@@ -50,13 +51,11 @@ async function loadStressors() {
 
     document.getElementById("stressor").innerHTML=options;
 }
-loadStressors();
 
 // Load regions
 async function loadRegions() {
     const response = await fetch(apiURL+'regions');
     const data = await response.json();
-    console.log("REGIONS")
 
     var options = "";//'<option value=""> -- Select country --</option>'
     //data.sort() // cannot sort because its a dictionart from the API (this is an OBJECT) needs to be aray
@@ -72,24 +71,18 @@ async function loadRegions() {
     }); 
 
     for (let country of data.result) { //data.result is an array
-        //console.log(country.region_name);
-
         options += `<option value="${country.region_id}">${country.region_name}</option>`;
-        //var lat = country.region_lat
-        //var lon = country.region_lon
-        //console.log(lat,lon)
-        
     }
+
     document.getElementById("region-from").innerHTML=options;
     document.getElementById("region-to").innerHTML=options;
 }
-loadRegions();
 
 // Load sectors
 async function loadSectors() {
     const response = await fetch(apiURL+'sectors');
     const data = await response.json(); 
-    console.log("SECTORS")
+
     var options = ""; //<option> -- Select sector --</option>
 
     for (let sector of data.result) {
@@ -98,21 +91,21 @@ async function loadSectors() {
     document.getElementById("sector-from").innerHTML=options;
     document.getElementById("sector-to").innerHTML=options;
 }
-loadSectors();
 
 // Check how many Leaflet layers at start
 function layerStart(){
     let qq = 0;
     map.eachLayer(function(){ qq += 1; });
-    //console.log('Map has', qq, 'layers at start.');
+    console.log('Map has', qq, 'layers at start.');
 }
-layerStart();
+
+
 
 // Count layers
 function countLayers() {
     let ll = 0;
     map.eachLayer(function(){ ll += 1; });
-    //console.log('Map has', ll, 'layers.');
+    console.log('Map has', ll, 'layers.');
 }
 
 // Delete old layers 
@@ -128,10 +121,19 @@ function deleteLayers(){
 
 function readData() {
     var stressor   = document.getElementById('stressor').value;
-    var regionTo   = document.getElementById('region-to').value;
-    var regionFrom = document.getElementById('region-from').value;
-    var sectorFrom = document.getElementById('sector-from').value;
-    var sectorTo   = document.getElementById('sector-to').value;
+
+    var regionFrom  = Array.from(document.querySelectorAll('#region-from > option:checked'),
+    ({value}) => value
+    );
+    var regionTo    = Array.from(document.querySelectorAll('#region-to > option:checked'),
+    ({value}) => value
+    );
+    var sectorFrom  = Array.from(document.querySelectorAll('#sector-from > option:checked'),
+    ({value}) => value
+    );
+    var sectorTo   = Array.from(document.querySelectorAll('#sector-to > option:checked'),
+    ({value}) => value
+    );
 
     return {
         "stressor": stressor,
@@ -150,207 +152,294 @@ async function getResults() {
     try {
         const response = await fetch(endpoint);
         const data     = await response.json();
-        //console.log("this is data from getResults");
-        //console.log(data);
         return data;
 
 
     } catch {
-        console.log("Error in API request"); 
+        console.log("Error in the API request"); 
     }
 }
 
-async function regionalData(){
+async function regData() {
+    // Read the data that the user has chosen from the form
     formData = readData();
-    //console.log(formData);
-
+    var results  = await getResults();
+    // Get all lat/lon data from the regions API
     var regionURL = apiURL+"regions";
 
         try {
+            // Retrieve lat/lon data from the regions API. This will return the data for all countries
             const response = await fetch(regionURL);
-            //console.log(regionURL);
-            //console.log("regionLatLon fetched");
             const latlondata = await response.json();
-            var arrayLatLon  = latlondata.result;
-            //console.log([formData.regionTo, formData.regionFrom]);
-            //console.log(arrayLatLon);
-            var geographicData = await getLatLon(arrayLatLon, [formData.regionTo, formData.regionFrom]);
-            //console.log(geographicData);
-            //console.log(typeof geographicData);
 
-            return geographicData;
-        } catch {
-            console.log("Error in API request");
-    }              
+            // arrayLL will return an array nested with dicts of all the region ids, region names & their lats/lons
+            // example: arrayLL[0] = {region_id:"at", region_lat: 47.xx, region_lon: 14.xx, region_name:"austria"}
+            var arrayLL  = latlondata.result;
+
+            // userRequest will return a list of results of the data that the user is requesting in the form
+            var userRequest = results.result;
+
+            // for each row in userRequest
+            for (var p=0; p < userRequest.length; p++ ){
+                // and for each row in the list of country coordinate data
+                for (var t=0; t < arrayLL.length; t++ ){
+                    // if the country id at row t in the array matches the region_from (also the id) data requested by the user
+                    if (arrayLL[t].region_id === userRequest[p].region_from) {
+                        //create a dictionary that houses the region from coordinates 
+                        userRequest[p]["coords_from"] = {"lat" : arrayLL[t].region_lat, "lon" : arrayLL[t].region_lon}
+                    }
+                    // and do the same when region_id matches the region_to id
+                    if (arrayLL[t].region_id === userRequest[p].region_to) { 
+                        userRequest[p]["coords_to"] = {"lat" : arrayLL[t].region_lat, "lon" : arrayLL[t].region_lon}
+                    }
+                }
+            }            
+
+            return userRequest;
+
+        } catch(err) {
+            console.log(err.message);
+            console.log("Error parsing the location data");
+            
+    }   
 }
 
-async function getLatLon(latlondata, regions){
-    // Get the latitude and longitude of the regions to/from.
-    var regionsLatLon = {}
-    for (var i=0; i<regions.length; i++) {
-        for (var j=0; j<latlondata.length; j++) {
-            if (latlondata[j].region_id === regions[i]) {
-                // Get an object of the region lat and lons
-                regionsLatLon[regions[i]] = {'lat':latlondata[j].region_lat,
-                                            'lon':latlondata[j].region_lon}
-            }
-        }
+function createPopUpTable(userData) {
+    var popUpTable = document.getElementById('results-pop-up-body');
+    popUpTable.innerHTML = `<tr>`;
+    for (var i=0; i<userData.length; i++){
+        var row = ` <td>${userData[i].region_from}</td>
+                    <td>${userData[i].sector_from}</td>
+                    <td>${userData[i].sector_to}</td>
+                    <td>${Math.round(userData[i].val)}</td>
+                    <td>${userData[i].unit}</td>`;
+        popUpTable.innerHTML += row;
     }
-
-    //console.log(regionsLatLon);
-    //console.log(Object.keys(regionsLatLon).length);
-    
-    /* if rTo===rFrom, regionsLatLon only returns 1 data point. A duplicate of that region
-    is needed for the map.  */ 
-    if (Object.keys(regionsLatLon).length === 1) {
-        var regionToLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-        var regionFromLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-    } else {
-        var regionToLatLon   = [regionsLatLon[Object.keys(regionsLatLon)[0]]];
-        var regionFromLatLon = [regionsLatLon[Object.keys(regionsLatLon)[1]]];
-    }
-     
-    var fromToLatLon     = [...regionFromLatLon, ...regionToLatLon];
-
-    return fromToLatLon;
-
-}
-
-async function makeArrow() {
-    deleteLayers();
-    var formData = readData();
-    var results  = await getResults();
-    var rData    = await regionalData();
-    var pop      = await setPopUp();
-
-
-    /* Get latlong data */ 
-    var start = rData[0];
-    var end   = rData[1];
-
-    var sectorFrom = results.result[0].sector_from;
-    var value      = results.result[0].val;
-    var stressor   = formData.stressor;
-
-    /* Color the polyline based on the sector from which the emission comes */
-    var lineColor = colorDict[sectorFrom];
-
-    /* Size the width of the polyline based on the sector's emission intensity.
-    Emission intensity is proportional to the query value over the highest value for
-    that stressor. The log of both is used to reduce the distance between the two values
-    (since stressorMax is a very large value, it always yields a very small value). The
-    lineSize is the maximum value that the line should be (anything bigger and it does
-    not look good visually) */
-
-    var stressorMax = maxVals[stressor];
-    var lineSize = 20;
-    var stressorRatio =  Math.log(value)/Math.log(stressorMax);
-
-    //console.log(stressorRatio);
-
-    /* Any value <1 is considered to be 0 (log of any value <1 is negative) */
-    if (value < 1){
-        var newMarker = L.icon({iconUrl: 'images/marker.svg', iconSize: [24, 30], iconAnchor: [15, 30]});
-        lyrGroup.addLayer(L.marker(start, {icon: newMarker}).addTo(map));
-        map.setView(start, zoom=5);
-
-        // Eventually do not show info, but make popup that gives information if 0 
-
-    } else {
-        lineWeight = 1 + lineSize*stressorRatio;
-    }
-    
-
-    
-    /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
-    with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
-    designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
-    since the midpoint is assumed to be in the middle of the bottom edge of the icon.  */
-    if (start === end) {
-        var newMarker = L.icon({iconUrl: 'images/marker.svg', iconSize: [24, 30], iconAnchor: [15, 30]});
-        lyrGroup.addLayer(L.marker(start, {icon: newMarker}).bindPopup(pop).addTo(map));
-        map.setView(start, zoom=5);
-
-
-        
-    } else {
-        var polyline = lyrGroup.addLayer(L.polyline([start,end], 
-                                                    {color: lineColor, 
-                                                    weight: lineWeight})
-                                        .arrowheads({size: '20px',
-                                                    yawn: 55,
-                                                    fill: true}));
-        polyline.addTo(map);
-    }
-}
-
-async function setPopUp() {
-    var results  = await getResults();
-    for (var i=0; i<results.result.length; i++){
-    var popUpTable = `<div class="row" id="pop-up-container">
-                            <table id="pop-up-table">
-                            <th>
-                            </th>
-                                <tr id="pop-up-table-row">
-                                    <td>Region: </td>
-                                    <td>${results.result[i].region_from}</td>
-                                </tr>
-                                <tr id="pop-up-table-row">
-                                    <td>Sector From: </td>
-                                    <td> ${results.result[i].sector_from}</td>
-                                </tr>
-                                <tr id="pop-up-table-row">
-                                    <td>Sector To: </td> 
-                                    <td>${results.result[i].sector_to}</td>
-                                </tr>
-                            </th>
-                            </table>
-                        </div>
-                        <div class="row" id="pop-up-container">
-                            <div class="column" id="pop-up-value-column">
-                                <p id="pop-up-value"> ${Math.round(results.result[i].val)} </p>
-                            </div>
-                            <div class="column" id="pop-up-value-column">
-                                <p id="pop-up-unit"> ${results.result[i].unit} </p>
-                            </div>
-                        </div>`;
-    }
-
-    var popup = L.popup({offset: [-2, -24]})
-                .setContent(popUpTable)
+    popUpTable.innerHTML += `</tr>`;
+    var popup = L.popup({offset: [-2, -24], maxWidth: "auto"})
+                .setContent(document.getElementById("pop-up-table"))
 
     return popup;
 }
+/* Hide the map if the button "View Table" at the top of the page is selected */
+function viewTable(userData) {
+    var tableBtn = document.getElementById('table-btn');
+    tableBtn.onclick = function() {
+        var showMap = document.getElementById('map');
+        showMap.style.display = 'none';
+        var infoTable = document.getElementById('info-table');
+        infoTable.style.display= 'block';
+        console.log("Map hidden - table shown");
+    }  
+    createTable(userData);
+}  
 
-document.getElementById("info-table").style.visibility="hidden";
-
-
-async function createTable(){
-    var results  = await getResults();
+function createTable(userData){
+    /* createTable() accepts the results from the user input (comes from the getResults())
+    and makes a table from these results. */
     document.getElementById("info-table").style.visibility="visible";
     var table = document.getElementById('results-table-body');
     table.innerHTML = "";
-    for (var i=0; i<results.result.length; i++){
+    for (var i=0; i<userData.length; i++){
         
         //console.log(data.length);
-        var row = ` <td>${results.result[i].region_from}</td>
-                    <td>${results.result[i].region_to}</td>
-                    <td>${results.result[i].sector_from}</td>
-                    <td>${results.result[i].sector_to}</td>
-                    <td>${Math.round(results.result[i].val)}</td>
-                    <td>${results.result[i].unit}</td>`;
+        var row = ` <td>${userData[i].region_from}</td>
+                    <td>${userData[i].region_to}</td>
+                    <td>${userData[i].sector_from}</td>
+                    <td>${userData[i].sector_to}</td>
+                    <td>${Math.round(userData[i].val)}</td>
+                    <td>${userData[i].unit}</td>`;
         table.innerHTML += row;
     }
 }
 
+function lineFactor(userData) { 
 
-document.getElementById('api-form').addEventListener('submit', async function (e){
-    e.preventDefault(); 
+    /*The number of arrows that appear on the map are influenced by two factors: the number of 
+    (rf,rt) pairs and the number of sectors from (sf). In the case of overlapping lines, this is due to one 
+    (rf,rt) pair having multiple sectors to/from, so we need to separate these overlapping lines. 
+    To do so, we make a set (to remove duplicate (sf-st) pairs of other countries) to know how many
+    (sf,st) pairs will exist for each (rf, rt) pair. 
+    */
 
-    getResults();
-    makeArrow();
-    createTable();
+    var setSF = new Set()
 
-})
+    for (var i=0; i < userData.length; i++ ){
+        setSF.add(userData[i].sector_from);
+    }
+
+    // Add 3 to the set size to reduce having a large factor value (which will result in a large curve)
+    var numSF = setSF.size + 5
+    
+    arrayFactors = []
+    for (var i=0; i < (setSF.size); i++ ){
+        arrayFactors.push(Math.abs(Math.log((i+1) / numSF)))
+    }
+    return arrayFactors
+}
+
+function bboxLatLng(userData) {
+    bnds  = []
+
+    // Get latlon data for each region selected
+    for (var i=0; i < userData.length; i++ ){
+        var reg1 = Object.values(userData[i].coords_from);
+        var reg2 = Object.values(userData[i].coords_to);
+
+        bnds.push(reg1, reg2)
+    }
+
+    // Remove duplicates (from SO: https://stackoverflow.com/questions/44014799/javascript-how-to-remove-duplicate-arrays-inside-array-of-arrays)
+    // Comments my own
+    
+    // Create an object to hold the lats and lons
+    var removeDuplicates = {}
+
+    // For each array in the bnds element, join it to remove duplicates as a key
+    // and as value {45.1, 15.2: [45.1, 15.2]. Since we get the key as the lat/lon
+    // we can get these later (since a dict will not have a duplicate key)
+    // so this allows us to only get once instance each of the lat/lon as an array
+
+    bnds.forEach(function(arr){
+        removeDuplicates[arr.join(",")] = arr;
+    });
+
+    //console.log(removeDuplicates);
+    var bndsOnce = Object.keys(removeDuplicates).map(function(i) {
+        return removeDuplicates[i]
+    });
+
+    //console.log(bndsOnce)
+    return bndsOnce
+}
+
+function colorArrow(userData){
+    var setColors = new Set()
+    for (var c=0; c < userData.length; c++ ){
+        var sectorFrom = userData[c].sector_from;
+        var lineColor  = colorDict[sectorFrom];
+        setColors.add(lineColor)
+    }
+
+    return setColors
+}
+
+function swoops(userData, pop, bounds, factors, colors) {
+    var formData = readData();
+
+    for (var i=0; i < userData.length; i++ ){
+        for (var f=0; f < factors.length; f++) {
+            for (var c=0; c < colors.length; c++) {
+                console.log(c)
+                var value   = userData[i].val;
+                var latlng1 = Object.values(userData[i].coords_from);
+                var latlng2 = Object.values(userData[i].coords_to);
+    
+                var sectorFrom = userData[i].sector_from;
+                var lineColor  = colorDict[sectorFrom];
+    
+                // Get weight of line
+                var stressor = formData.stressor;
+                var stressorMax = maxVals[stressor];
+                var stressorRatio =  Math.log(value)/Math.log(stressorMax);
+                var lineSize = 15
+                var lineWeight = lineSize*stressorRatio
+    
+                if (userData[i].region_from === userData[i].region_to) {
+                    region = userData[i].coords_from;
+                    markerIcon(region, pop);
+    
+                // When region_from = ROW, print "rest of the world" at the end of the polyline
+                // so it is clear to the user where this arrow is "coming from"
+    
+                } else if (userData[i].region_from === "row") {
+                    const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+                        iconAnchor: [35, -15],  // Adjust html test positioning
+                        color: c,       // Color polyline and arrowhead
+                        arrowFilled: true,
+                        factor: 0.5,            // Control the bend of the arrow
+                        weight: lineWeight,     // Change polyline weight 
+                        html: 'Rest of the world' // Include as explanation for the ROW region_from
+                    })).addTo(map);
+                } else { 
+                        const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+                            color: c,
+                            arrowFilled: true,
+                            factor: f,
+                            weight: lineWeight,   
+                        })).addTo(map); 
+            }
+        }
+    }
+        // Accepts the bounds from the bboxLatLng function and bounds around all polyines
+        map.fitBounds(L.latLngBounds(bounds));
+    }
+}
+
+function markerIcon (region, pop) {
+    console.log(region)
+    /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
+    with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
+    designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
+    since the midpoint is assumed to be in the middle of the bottom edge of the icon.  */
+
+    var newMarker = L.icon({iconUrl: 'images/marker.svg', 
+                            iconSize: [24, 30], 
+                            iconAnchor: [15, 30]});
+
+    lyrGroup.addLayer(L.marker(region, {icon: newMarker})
+            .bindPopup(pop).addTo(map));
+
+    var newmap = map.setView(region, zoom=6);
+
+    return newmap
+}
+
+/* Hide the table */ 
+async function viewMap(userData, pop, bounds, factors, colors) {
+    var mapBtn = document.getElementById('map-btn');
+    mapBtn.onclick = function() {
+        var infoTable = document.getElementById('info-table');
+        infoTable.style.display = 'none';
+        var showMap = document.getElementById('map');
+        showMap.style.display= 'block';
+        console.log("Table hidden - map shown")
+    }
+    swoops(userData, pop, bounds, factors, colors);
+}
 
 
+function getFormData(){
+    document.getElementById('api-form').addEventListener('submit', async function (e){
+        e.preventDefault(); 
+        deleteLayers();
+        var userData = await regData();
+        var pop      = createPopUpTable(userData);
+        var bounds   = bboxLatLng(userData);
+        var factors  = lineFactor(userData);
+        var colors   = colorArrow(userData);
+        console.log(colors)
+
+        viewTable(userData);
+        viewMap(userData, pop, bounds, factors, colors);
+        countLayers();
+        })
+}
+
+async function main(){
+    // Load the API data into the form selection (list all str, reg, and sec in form)
+    await loadStressors();
+    await loadRegions();
+    await loadSectors();
+
+    // Implement the business logic
+
+    layerStart();
+    getFormData();
+
+    map.on('zoomend',function(e) {
+        console.log('Actual zoom: ' + e.target.getZoom());
+     })
+}
+
+main();
