@@ -13,7 +13,7 @@ L.tileLayer(tileURL, {
 }).addTo(map);
 
 // add layer group
-var lyrGroup = L.layerGroup().addTo(map);
+var lyrGroup = L.featureGroup().addTo(map);
  
 // Match a sector to a color (used to color polylines)
 var colorDict = {"accommodation_and_food_services": "blue", 
@@ -98,8 +98,6 @@ function layerStart(){
     map.eachLayer(function(){ qq += 1; });
     console.log('Map has', qq, 'layers at start.');
 }
-
-
 
 // Count layers
 function countLayers() {
@@ -269,11 +267,15 @@ function lineFactor(userData) {
     }
 
     // Add 3 to the set size to reduce having a large factor value (which will result in a large curve)
-    var numSF = setSF.size + 5
+    var numSF = setSF.size + 2
     
     arrayFactors = []
     for (var i=0; i < (setSF.size); i++ ){
-        arrayFactors.push(Math.abs(Math.log((i+1) / numSF)))
+        /* Need to add i+1 in the Math.sqrt() else i will be 0, since the first value of i < (setSF.size) 
+        will be 0 (0th position). We do not, however, add 1 to setSF.size because then this would provide
+        yield an array of 3 values instead of two (thus three arrows)
+        */
+        arrayFactors.push(Math.sqrt(i+1 / numSF))
     }
     return arrayFactors
 }
@@ -318,76 +320,105 @@ function colorArrow(userData){
     for (var c=0; c < userData.length; c++ ){
         var sectorFrom = userData[c].sector_from;
         var lineColor  = colorDict[sectorFrom];
-        setColors.add(lineColor)
+        setColors.add(lineColor);
     }
-
-    return setColors
+    var arrayColors = Array.from(setColors);
+    return arrayColors
 }
 
-function swoops(userData, pop, bounds, factors, colors) {
+function getRanFloat(){
+    counter = []
+    // Assign min/max values 
+    min = 0.1
+    max = 0.8
+    // num will yield a number between 0.1 and 0.6*random float
+    num = min + Math.random() * (max);
+
+    // Check that the same number doesn't get used more than once
+    if (num in counter) {
+        getRanFloat();
+    } else {
+        counter.push(num);
+    }
+    return num;
+}
+
+function swoops(userData, pop, bounds) {
     var formData = readData();
 
+    console.log(userData)
+    console.log(userData.length)
+
+    //for (var [index, element] of colors.entries()){
+    //    var index = index
+    //    console.log(index, element)
+    //}
+
     for (var i=0; i < userData.length; i++ ){
-        for (var f=0; f < factors.length; f++) {
-            for (var c=0; c < colors.length; c++) {
-                console.log(c)
-                var value   = userData[i].val;
-                var latlng1 = Object.values(userData[i].coords_from);
-                var latlng2 = Object.values(userData[i].coords_to);
-    
-                var sectorFrom = userData[i].sector_from;
-                var lineColor  = colorDict[sectorFrom];
-    
-                // Get weight of line
-                var stressor = formData.stressor;
-                var stressorMax = maxVals[stressor];
-                var stressorRatio =  Math.log(value)/Math.log(stressorMax);
-                var lineSize = 15
-                var lineWeight = lineSize*stressorRatio
-    
-                if (userData[i].region_from === userData[i].region_to) {
-                    region = userData[i].coords_from;
-                    markerIcon(region, pop);
-    
-                // When region_from = ROW, print "rest of the world" at the end of the polyline
-                // so it is clear to the user where this arrow is "coming from"
-    
-                } else if (userData[i].region_from === "row") {
-                    const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
-                        iconAnchor: [35, -15],  // Adjust html test positioning
-                        color: c,       // Color polyline and arrowhead
-                        arrowFilled: true,
-                        factor: 0.5,            // Control the bend of the arrow
-                        weight: lineWeight,     // Change polyline weight 
-                        html: 'Rest of the world' // Include as explanation for the ROW region_from
-                    })).addTo(map);
-                } else { 
-                        const swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
-                            color: c,
-                            arrowFilled: true,
-                            factor: f,
-                            weight: lineWeight,   
-                        })).addTo(map); 
-            }
+      
+        var sectorFrom = userData[i].sector_from;
+        var lineColor  = colorDict[sectorFrom];
+
+        var value   = userData[i].val;
+        var latlng1 = Object.values(userData[i].coords_from);
+        var latlng2 = Object.values(userData[i].coords_to);
+
+        // Get weight of line
+        var stressor = formData.stressor;
+        var stressorMax = maxVals[stressor];
+        var stressorRatio =  Math.log(value)/Math.log(stressorMax);
+        var lineSize = 15
+        var lineWeight = lineSize*stressorRatio
+
+        if (userData[i].region_from === userData[i].region_to) {
+            region = userData[i].coords_from;
+            markerIcon(region, pop);
+
+        // When region_from = ROW, print "rest of the world" at the end of the polyline
+        // so it is clear to the user where this arrow is "coming from"
+
+        } else if (userData[i].region_from === "row") {
+            var swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+                iconAnchor: [35, -15],  // Adjust html test positioning
+                color: lineColor,       // Color polyline and arrowhead
+                arrowFilled: true,
+                factor: getRanFloat(),            // Control the bend of the arrow
+                weight: lineWeight,     // Change polyline weight 
+                html: 'Rest of the world' // Include as explanation for the ROW region_from
+            })).addTo(map);
+        } else { 
+            var swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+                color: lineColor,
+                arrowFilled: true,
+                factor: getRanFloat(),
+                weight: lineWeight
+            })
+            ).addTo(map);       
         }
-    }
         // Accepts the bounds from the bboxLatLng function and bounds around all polyines
         map.fitBounds(L.latLngBounds(bounds));
+
+        // Add tooltip
+        swoopy.on("mouseover", function (e) {
+            e.target.bindPopup(pop)
+            console.log("mouse")
+        })
     }
 }
 
+
 function markerIcon (region, pop) {
-    console.log(region)
+
     /* When rTo and rFrom are same, a marker is added. The original blue marker is swapped
     with a nicer marker (made in ppt). The iconAnchor puts the top left corner of the icon at the 
     designated latlong. The iconAnchor is moved up by the length of the icon (30) and to the left by 15 pixels
     since the midpoint is assumed to be in the middle of the bottom edge of the icon.  */
 
-    var newMarker = L.icon({iconUrl: 'images/marker.svg', 
-                            iconSize: [24, 30], 
-                            iconAnchor: [15, 30]});
+    //var newMarker = L.icon({iconUrl: 'images/marker.svg', 
+    //                        iconSize: [24, 30], 
+    //                        iconAnchor: [15, 30]});
 
-    lyrGroup.addLayer(L.marker(region, {icon: newMarker})
+    lyrGroup.addLayer(L.marker(region)
             .bindPopup(pop).addTo(map));
 
     var newmap = map.setView(region, zoom=6);
@@ -396,7 +427,7 @@ function markerIcon (region, pop) {
 }
 
 /* Hide the table */ 
-async function viewMap(userData, pop, bounds, factors, colors) {
+async function viewMap(userData, pop, bounds) {
     var mapBtn = document.getElementById('map-btn');
     mapBtn.onclick = function() {
         var infoTable = document.getElementById('info-table');
@@ -405,7 +436,7 @@ async function viewMap(userData, pop, bounds, factors, colors) {
         showMap.style.display= 'block';
         console.log("Table hidden - map shown")
     }
-    swoops(userData, pop, bounds, factors, colors);
+    swoops(userData, pop, bounds);
 }
 
 
@@ -418,11 +449,17 @@ function getFormData(){
         var bounds   = bboxLatLng(userData);
         var factors  = lineFactor(userData);
         var colors   = colorArrow(userData);
-        console.log(colors)
+
+        for (var i = 0; i < colors.length; i++) {
+            //console.log(colors[i]);
+        }
+
+        for (var t = 0; t < factors.length; t++) {
+            //console.log(t);
+        }
 
         viewTable(userData);
-        viewMap(userData, pop, bounds, factors, colors);
-        countLayers();
+        viewMap(userData, pop, bounds);
         })
 }
 
