@@ -9,7 +9,8 @@ var map = L.map('map')
 var tileURL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 L.tileLayer(tileURL, {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-    maxZoom: 16
+    maxZoom: 16,
+    interactive: true
 }).addTo(map);
 
 // add layer group
@@ -219,6 +220,25 @@ function createPopUpTable(userData) {
 
     return popup;
 }
+
+function createArrowTable(userData, docElement) {
+    // This table will be used for events onclick and onhover for the arrow
+    // that is drawn between r_i and r_j
+    var arrowTable = docElement
+    arrowTable.innerHTML = `<tr>`;
+    for (var i=0; i<userData.length; i++){
+        var row = ` <td>${userData[i].region_from}</td>
+                    <td>${userData[i].sector_from}</td>
+                    <td>${userData[i].sector_to}</td>
+                    <td>${Math.round(userData[i].val)}</td>
+                    <td>${userData[i].unit}</td>`;
+        arrowTable.innerHTML += row;
+    }
+    arrowTable.innerHTML += `</tr>`;
+
+    return arrowTable()
+}
+
 /* Hide the map if the button "View Table" at the top of the page is selected */
 function viewTable(userData) {
     var tableBtn = document.getElementById('table-btn');
@@ -315,7 +335,7 @@ function bboxLatLng(userData) {
     return bndsOnce
 }
 
-function colorArrow(userData){
+/* function colorArrow(userData){
     var setColors = new Set()
     for (var c=0; c < userData.length; c++ ){
         var sectorFrom = userData[c].sector_from;
@@ -325,17 +345,17 @@ function colorArrow(userData){
     var arrayColors = Array.from(setColors);
     return arrayColors
 }
-
+ */
 function getRanFloat(){
     counter = []
     // Assign min/max values 
     min = 0.1
     max = 0.8
-    // num will yield a number between 0.1 and 0.6*random float
+    // num will yield a number between 0.1 and 0.8*random float
     num = min + Math.random() * (max);
 
     // Check that the same number doesn't get used more than once
-    if (num in counter) {
+    if (counter.includes(num)) {
         getRanFloat();
     } else {
         counter.push(num);
@@ -345,14 +365,6 @@ function getRanFloat(){
 
 function swoops(userData, pop, bounds) {
     var formData = readData();
-
-    console.log(userData)
-    console.log(userData.length)
-
-    //for (var [index, element] of colors.entries()){
-    //    var index = index
-    //    console.log(index, element)
-    //}
 
     for (var i=0; i < userData.length; i++ ){
       
@@ -378,7 +390,7 @@ function swoops(userData, pop, bounds) {
         // so it is clear to the user where this arrow is "coming from"
 
         } else if (userData[i].region_from === "row") {
-            var swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+            lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
                 iconAnchor: [35, -15],  // Adjust html test positioning
                 color: lineColor,       // Color polyline and arrowhead
                 arrowFilled: true,
@@ -386,26 +398,22 @@ function swoops(userData, pop, bounds) {
                 weight: lineWeight,     // Change polyline weight 
                 html: 'Rest of the world' // Include as explanation for the ROW region_from
             })).addTo(map);
+
         } else { 
-            var swoopy = lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
+            lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
                 color: lineColor,
                 arrowFilled: true,
                 factor: getRanFloat(),
                 weight: lineWeight
             })
-            ).addTo(map);       
+            ).addTo(map);  
         }
+
         // Accepts the bounds from the bboxLatLng function and bounds around all polyines
         map.fitBounds(L.latLngBounds(bounds));
-
-        // Add tooltip
-        swoopy.on("mouseover", function (e) {
-            e.target.bindPopup(pop)
-            console.log("mouse")
-        })
+        
     }
 }
-
 
 function markerIcon (region, pop) {
 
@@ -437,6 +445,41 @@ async function viewMap(userData, pop, bounds) {
         console.log("Table hidden - map shown")
     }
     swoops(userData, pop, bounds);
+    addTextTooltip();
+}
+
+function maxZIndex() {
+    return Array.from(document.querySelectorAll('body *'))
+      .map(a => parseFloat(window.getComputedStyle(a).zIndex))
+      .filter(a => !isNaN(a))
+      .sort()
+      .pop();
+  }
+
+function addTextTooltip() { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
+    var arrowPath = document.getElementsByTagName('path');
+    console.log(arrowPath)
+    // getElementsBy (class, tag name, ...) will always return a node list, so we need to iterate through this
+    for (var i = 0; i < arrowPath.length; i++) {
+        arrowPath[i].addEventListener("mouseover", function(e) {
+            // get mouse coords (relative or absol)
+            // client may be relev to viewport and page to document
+            var tooltipTest = document.getElementById('hello-test');
+            tooltipTest.style.position = 'absolute'; // move to css
+            tooltipTest.style.top = (e.pageY - tooltipTest.offsetHeight/2)+'px';
+            tooltipTest.style.left = (e.pageX - tooltipTest.offsetWidth/2)+'px';
+            tooltipTest.style.zIndex = maxZIndex() + 1;
+            // to center, subtract dimension
+            // need to computer highest value of z index because this is what is getting hte value
+            // to show up above the map (the map is hiding the tooltip information at the moment)
+            tooltipTest.innerHTML = `<p> Hello world </p>`;
+
+            // can change cursor style to pointer in css (cursor: pointer;)
+        });
+    }
+
+    //${Math.round(userData[i].val)} ${userData[i].unit} </title>;
+    //}
 }
 
 
@@ -447,19 +490,10 @@ function getFormData(){
         var userData = await regData();
         var pop      = createPopUpTable(userData);
         var bounds   = bboxLatLng(userData);
-        var factors  = lineFactor(userData);
-        var colors   = colorArrow(userData);
-
-        for (var i = 0; i < colors.length; i++) {
-            //console.log(colors[i]);
-        }
-
-        for (var t = 0; t < factors.length; t++) {
-            //console.log(t);
-        }
 
         viewTable(userData);
         viewMap(userData, pop, bounds);
+
         })
 }
 
@@ -473,6 +507,8 @@ async function main(){
 
     layerStart();
     getFormData();
+
+
 
     map.on('zoomend',function(e) {
         console.log('Actual zoom: ' + e.target.getZoom());
