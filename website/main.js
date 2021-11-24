@@ -221,10 +221,11 @@ function createPopUpTable(userData) {
     return popup;
 }
 
-function createArrowTable(userData, docElement) {
+function createArrowTable(userData) {
     // This table will be used for events onclick and onhover for the arrow
     // that is drawn between r_i and r_j
-    var arrowTable = docElement
+    var arrowMouse = document.getElementById('arrow-table');
+    var arrowTable = document.getElementById('results-arrow-body');
     arrowTable.innerHTML = `<tr>`;
     for (var i=0; i<userData.length; i++){
         var row = ` <td>${userData[i].region_from}</td>
@@ -236,7 +237,8 @@ function createArrowTable(userData, docElement) {
     }
     arrowTable.innerHTML += `</tr>`;
 
-    return arrowTable()
+    arrowMouse.setContent(document.getElementById("results-arrow-body"))
+    return arrowTable
 }
 
 /* Hide the map if the button "View Table" at the top of the page is selected */
@@ -445,7 +447,7 @@ async function viewMap(userData, pop, bounds) {
         console.log("Table hidden - map shown")
     }
     swoops(userData, pop, bounds);
-    addTextTooltip();
+    addTextTooltip(userData);
 }
 
 function maxZIndex() {
@@ -456,30 +458,42 @@ function maxZIndex() {
       .pop();
   }
 
-function addTextTooltip() { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
+function addTextTooltip(userData) { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
     var arrowPath = document.getElementsByTagName('path');
     console.log(arrowPath)
+
     // getElementsBy (class, tag name, ...) will always return a node list, so we need to iterate through this
     for (var i = 0; i < arrowPath.length; i++) {
         arrowPath[i].addEventListener("mouseover", function(e) {
-            // get mouse coords (relative or absol)
+            //createArrowTable(userData);
             // client may be relev to viewport and page to document
-            var tooltipTest = document.getElementById('hello-test');
+            var tooltipTest = document.getElementById('results-arrow-body');
+            tooltipTest.innerHTML = ``;
+            for (var i=0; i<userData.length; i++){
+                var row = ` <td>${userData[i].region_from}</td>
+                            <td>${userData[i].region_to}</td>
+                            <td>${userData[i].sector_from}</td>
+                            <td>${userData[i].sector_to}</td>
+                            <td>${Math.round(userData[i].val)}</td>
+                            <td>${userData[i].unit}</td>`;
+                tooltipTest.innerHTML += row;
+            }
+            tooltipTest.innerHTML += `</tbody>`;
+
             tooltipTest.style.position = 'absolute'; // move to css
+            // get mouse coords (relative or absol)
             tooltipTest.style.top = (e.pageY - tooltipTest.offsetHeight/2)+'px';
             tooltipTest.style.left = (e.pageX - tooltipTest.offsetWidth/2)+'px';
             tooltipTest.style.zIndex = maxZIndex() + 1;
             // to center, subtract dimension
             // need to computer highest value of z index because this is what is getting hte value
             // to show up above the map (the map is hiding the tooltip information at the moment)
-            tooltipTest.innerHTML = `<p> Hello world </p>`;
-
+        })
             // can change cursor style to pointer in css (cursor: pointer;)
-        });
+        arrowPath[i].addEventListener("mouseout", function(){
+            tooltipTest.style.display = "none";
+        })
     }
-
-    //${Math.round(userData[i].val)} ${userData[i].unit} </title>;
-    //}
 }
 
 
