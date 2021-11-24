@@ -21,12 +21,12 @@ a {
 
 /* Navbar CSS */
 nav {
-  height: 75px;
   background-color: #ffffff;
   justify-content: space-between !important;
   color: #1e2744;
   border-bottom: 1px solid #e2866d;
   font-family: Helvetica;
+  padding-bottom: 1em;
 }
 
 .nav-link {
@@ -103,6 +103,16 @@ h1 {
   color: #1e2744;
 }
 
+#results-arrow-body {
+  background-color: white;
+  display: flex;
+  width: 1%;
+  white-space: nowrap;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  display: table;
+  padding: 20px;
+}
 /* Footer CSS */
 footer {
   margin-top: 15px;

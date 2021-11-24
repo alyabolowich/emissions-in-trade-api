@@ -53,7 +53,7 @@
         </nav>
     </div>
     <div class="container" id="jumbotron">
-        <h1 class="jtron-header">Emissions in Trade</h1>
+        <h1 class="jtron-header"> Emissions in Trade</h1>
         <p> Get emissions data by sector or region </p>
     </div>
 
@@ -107,7 +107,6 @@
     <div class="container-md">
         <div id="map"></div>
     </div>  
-    <!-- if any issues, I removed an <svg> tag -- can find it in github if needed -->
     
     <!-- create table to show on webpage-->
     <div class="container">
@@ -144,8 +143,19 @@
         </table>
     </div>
 
+    <table class="table table-bordered" id="arrow-table" >
+        <th scope="col">Region From</th>
+        <th scope="col">Region To</th>
+        <th scope="col">Sector From</th>
+        <th scope="col">Sector to</th> 
+        <th scope="col">Value</th> 
+        <th scope="col">Unit</th> 
+        <tbody id="results-arrow-body">
+        </tbody>
+    </table>
 
-
+    <div id="hello-test">
+    </div>
 
     <footer>
         <div class="container">
@@ -195,7 +205,7 @@
 
 
     <!-- main -->
-    <script src="main2.js"></script>
+    <script src="main.js"></script>
 
     
 
