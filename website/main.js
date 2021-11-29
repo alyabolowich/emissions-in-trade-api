@@ -147,7 +147,7 @@ async function getResults() {
     formData     = readData();
     var endpoint = apiURL+`stressors/${formData.stressor}?region_to=${formData.regionTo}&region_from=${formData.regionFrom}&sector_from=${formData.sectorFrom}&sector_to=${formData.sectorTo}`; 
     
-    //console.log(endpoint);
+    console.log(endpoint);
     try {
         const response = await fetch(endpoint);
         const data     = await response.json();
@@ -375,6 +375,7 @@ function swoops(userData, pop, bounds) {
         console.log(ud_val)
         var ud_unit = userData[i].unit;
 
+        // Insert a marker (pin) if rf = rt
         if (userData[i].region_from === userData[i].region_to) {
             region = userData[i].coords_from;
             markerIcon(region, pop);
@@ -391,7 +392,7 @@ function swoops(userData, pop, bounds) {
                 weight: lineWeight,     // Change polyline weight 
                 html: 'Rest of the world' // Include as explanation for the ROW region_from
             })).addTo(map);
-            //addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
+            addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
 
         } else { 
             lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
@@ -401,7 +402,7 @@ function swoops(userData, pop, bounds) {
                 weight: lineWeight
             }) 
             ).addTo(map); 
-                    addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
+            addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
         }
 
         // Accepts the bounds from the bboxLatLng function and bounds around all polyines
@@ -439,7 +440,6 @@ async function viewMap(userData, pop, bounds) {
         console.log("Table hidden - map shown")
     }
     swoops(userData, pop, bounds);
-
 }
 
 function maxZIndex() {
@@ -453,10 +453,14 @@ function maxZIndex() {
 function addTextTooltip(tt_regionFrom, tt_regionTo, tt_sectorFrom, tt_sectorTo, tt_Val, tt_Unit) { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
     var arrowPath = document.getElementsByTagName('path');
     console.log(arrowPath)
-
+    console.log("len -1 " + (arrowPath.length-1))
     // getElementsBy (class, tag name, ...) will always return a node list, so we need to iterate through this
     for (var i = 0; i < arrowPath.length; i++) {
-        arrowPath[i].addEventListener("mouseenter", function(e) {
+        var iteration = arrowPath.length-1
+    }
+
+        console.log("i in arrowpath" + i)
+        arrowPath[iteration].addEventListener("mouseenter", function(e) {
             // client may be relev to viewport and page to document
             var tooltipTest = document.getElementById('results-arrow-body');
             tooltipTest.innerHTML = ``;
@@ -485,9 +489,9 @@ function addTextTooltip(tt_regionFrom, tt_regionTo, tt_sectorFrom, tt_sectorTo, 
             // need to computer highest value of z index because this is what is getting hte value
             // to show up above the map (the map is hiding the tooltip information at the moment)
         })
-            // can change cursor style to pointer in css (cursor: pointer;)
+        // can change cursor style to pointer in css (cursor: pointer;)
 
-    }
+    //}
 }
 
 
