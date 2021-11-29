@@ -221,26 +221,6 @@ function createPopUpTable(userData) {
     return popup;
 }
 
-function createArrowTable(userData) {
-    // This table will be used for events onclick and onhover for the arrow
-    // that is drawn between r_i and r_j
-    var arrowMouse = document.getElementById('arrow-table');
-    var arrowTable = document.getElementById('results-arrow-body');
-    arrowTable.innerHTML = `<tr>`;
-    for (var i=0; i<userData.length; i++){
-        var row = ` <td>${userData[i].region_from}</td>
-                    <td>${userData[i].sector_from}</td>
-                    <td>${userData[i].sector_to}</td>
-                    <td>${Math.round(userData[i].val)}</td>
-                    <td>${userData[i].unit}</td>`;
-        arrowTable.innerHTML += row;
-    }
-    arrowTable.innerHTML += `</tr>`;
-
-    arrowMouse.setContent(document.getElementById("results-arrow-body"))
-    return arrowTable
-}
-
 /* Hide the map if the button "View Table" at the top of the page is selected */
 function viewTable(userData) {
     var tableBtn = document.getElementById('table-btn');
@@ -367,7 +347,7 @@ function getRanFloat(){
 
 function swoops(userData, pop, bounds) {
     var formData = readData();
-
+    console.log(userData)
     for (var i=0; i < userData.length; i++ ){
       
         var sectorFrom = userData[i].sector_from;
@@ -383,6 +363,17 @@ function swoops(userData, pop, bounds) {
         var stressorRatio =  Math.log(value)/Math.log(stressorMax);
         var lineSize = 15
         var lineWeight = lineSize*stressorRatio
+
+        // Get values for tooltip
+        var ud_rf   = userData[i].region_from;
+        console.log("rf " + ud_rf)
+        var ud_rt   = userData[i].region_to;
+        console.log("rt " + ud_rt)
+        var ud_sf   = userData[i].sector_from;
+        var ud_st   = userData[i].sector_to;
+        var ud_val  = Math.round(userData[i].val);
+        console.log(ud_val)
+        var ud_unit = userData[i].unit;
 
         if (userData[i].region_from === userData[i].region_to) {
             region = userData[i].coords_from;
@@ -400,6 +391,7 @@ function swoops(userData, pop, bounds) {
                 weight: lineWeight,     // Change polyline weight 
                 html: 'Rest of the world' // Include as explanation for the ROW region_from
             })).addTo(map);
+            //addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
 
         } else { 
             lyrGroup.addLayer(L.swoopyArrow(latlng1, latlng2, {
@@ -407,13 +399,13 @@ function swoops(userData, pop, bounds) {
                 arrowFilled: true,
                 factor: getRanFloat(),
                 weight: lineWeight
-            })
-            ).addTo(map);  
+            }) 
+            ).addTo(map); 
+                    addTextTooltip(ud_rf, ud_rt, ud_sf, ud_st, ud_val, ud_unit);
         }
 
         // Accepts the bounds from the bboxLatLng function and bounds around all polyines
         map.fitBounds(L.latLngBounds(bounds));
-        
     }
 }
 
@@ -447,7 +439,7 @@ async function viewMap(userData, pop, bounds) {
         console.log("Table hidden - map shown")
     }
     swoops(userData, pop, bounds);
-    addTextTooltip(userData);
+
 }
 
 function maxZIndex() {
@@ -456,43 +448,45 @@ function maxZIndex() {
       .filter(a => !isNaN(a))
       .sort()
       .pop();
-  }
+}
 
-function addTextTooltip(userData) { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
+function addTextTooltip(tt_regionFrom, tt_regionTo, tt_sectorFrom, tt_sectorTo, tt_Val, tt_Unit) { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
     var arrowPath = document.getElementsByTagName('path');
     console.log(arrowPath)
 
     // getElementsBy (class, tag name, ...) will always return a node list, so we need to iterate through this
     for (var i = 0; i < arrowPath.length; i++) {
-        arrowPath[i].addEventListener("mouseover", function(e) {
-            //createArrowTable(userData);
+        arrowPath[i].addEventListener("mouseenter", function(e) {
             // client may be relev to viewport and page to document
             var tooltipTest = document.getElementById('results-arrow-body');
             tooltipTest.innerHTML = ``;
-            for (var i=0; i<userData.length; i++){
-                var row = ` <td>${userData[i].region_from}</td>
-                            <td>${userData[i].region_to}</td>
-                            <td>${userData[i].sector_from}</td>
-                            <td>${userData[i].sector_to}</td>
-                            <td>${Math.round(userData[i].val)}</td>
-                            <td>${userData[i].unit}</td>`;
+            //for (var i=0; i<userData.length; i++){
+                var row = ` <td>${tt_regionFrom}</td>
+                            <td>${tt_regionTo}</td>
+                            <td>${tt_sectorFrom}</td>
+                            <td>${tt_sectorTo}</td>
+                            <td>${tt_Val}</td>
+                            <td>${tt_Unit}</td>`;
                 tooltipTest.innerHTML += row;
-            }
+            //}
             tooltipTest.innerHTML += `</tbody>`;
 
             tooltipTest.style.position = 'absolute'; // move to css
             // get mouse coords (relative or absol)
             tooltipTest.style.top = (e.pageY - tooltipTest.offsetHeight/2)+'px';
             tooltipTest.style.left = (e.pageX - tooltipTest.offsetWidth/2)+'px';
-            tooltipTest.style.zIndex = maxZIndex() + 1;
+            tooltipTest.style.zIndex = maxZIndex() ;
+            tooltipTest.style.display = "hidden";
+            tooltipTest.addEventListener("mouseleave",function(){
+                tooltipTest.innerHTML = ""; 
+                tooltipTest.style.display = "hidden"; //display auto or display hidden
+            })
             // to center, subtract dimension
             // need to computer highest value of z index because this is what is getting hte value
             // to show up above the map (the map is hiding the tooltip information at the moment)
         })
             // can change cursor style to pointer in css (cursor: pointer;)
-        arrowPath[i].addEventListener("mouseout", function(){
-            tooltipTest.style.display = "none";
-        })
+
     }
 }
 
