@@ -2,10 +2,10 @@
   "name": "eit",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "main2.js",
   "scripts": {
     "start": "npm run lite",
-    "lite" : "lite-server",
+    "lite": "lite-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +17,20 @@
   "bugs": {
     "url": "https://github.com/alyabolowich/bsp3/issues"
   },
-  "homepage": "https://github.com/alyabolowich/bsp3#readme"
+  "homepage": "https://github.com/alyabolowich/bsp3#readme",
+  "dependencies": {
+    "@elfalem/leaflet-curve": "^0.8.2",
+    "add": "^2.0.6",
+    "bootstrap": "^5.1.1",
+    "leaflet": "^1.7.1",
+    "leaflet-arrowheads": "^1.2.3",
+    "leaflet-curve": "^1.0.0",
+    "leaflet-geometryutil": "^0.9.3",
+    "leaflet-polylinedecorator": "^1.6.0",
+    "leaflet-polylineoffset": "^1.1.1",
+    "leaflet-rotatedmarker": "^0.2.0",
+    "leaflet-swoopy": "^3.4.1",
+    "leaflet-tooltip": "^1.0.4",
+    "yarn": "^1.22.11"
+  }
 }
