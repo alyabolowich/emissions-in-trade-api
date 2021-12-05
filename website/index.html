@@ -85,6 +85,7 @@
                 <div class="form-group col-md-6" id="userInput">
                     <label for="region-from">Region from</label> 
                     <select class="form-control" id="region-from" multiple required></select>
+
                 </div>
                 <div class="form-group col-md-6" id="userInput">
                     <label for="region-to">Region to</label>
@@ -131,8 +132,8 @@
     </div>
 
     <!-- create table to show in popup-->
-    <div class="row" id="pop-up-container" style="visibility: hidden">
-        <table class="table table-bordered" id="pop-up-table" >
+    <div class="row" id="pop-up-container" >
+        <table class="table table-bordered" id="pop-up-table">
             <th scope="col">Region</th>
             <th scope="col">Sector From</th>
             <th scope="col">Sector to</th> 
@@ -143,19 +144,12 @@
         </table>
     </div>
 
-    <table class="table table-bordered" id="arrow-table" >
-        <th scope="col">Region From</th>
-        <th scope="col">Region To</th>
-        <th scope="col">Sector From</th>
-        <th scope="col">Sector to</th> 
-        <th scope="col">Value</th> 
-        <th scope="col">Unit</th> 
-        <tbody id="results-arrow-body">
-        </tbody>
+    <!-- create tooltip table for arrow -->
+
+    <table class="table table-bordered" id="arrow-table">
     </table>
 
-    <div id="hello-test">
-    </div>
+
 
     <footer>
         <div class="container">
@@ -206,8 +200,29 @@
 
     <!-- main -->
     <script src="main.js"></script>
+    <script src="./evtrack/load.min.js"></script>
 
-    
+ <script>
+    let queryString = window.location.search;
+    let urlParams = new URLSearchParams(queryString);
+
+    let userId = urlParams.get('uid');
+        (function(){ 
+        
+          TrackUI.record({ 
+            // Remember to point to save.php (or similar) to write the log files. 
+            postServer: "http://localhost:5005" 
+          }); 
+          // TODO: Implement readUserId() function
+
+          //TrackUI.record({
+           // postServer: "//my.server.org/save.script",
+           // taskName: readUserId(),
+           // });  
+        
+        })(); 
+        </script> 
+
 
 </body> 
 </html>

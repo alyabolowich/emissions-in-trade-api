@@ -147,7 +147,7 @@ async function getResults() {
     formData     = readData();
     var endpoint = apiURL+`stressors/${formData.stressor}?region_to=${formData.regionTo}&region_from=${formData.regionFrom}&sector_from=${formData.sectorFrom}&sector_to=${formData.sectorTo}`; 
     
-    console.log(endpoint);
+    //console.log(endpoint);
     try {
         const response = await fetch(endpoint);
         const data     = await response.json();
@@ -207,12 +207,14 @@ function createPopUpTable(userData) {
     var popUpTable = document.getElementById('results-pop-up-body');
     popUpTable.innerHTML = `<tr>`;
     for (var i=0; i<userData.length; i++){
-        var row = ` <td>${userData[i].region_from}</td>
-                    <td>${userData[i].sector_from}</td>
-                    <td>${userData[i].sector_to}</td>
-                    <td>${Math.round(userData[i].val)}</td>
-                    <td>${userData[i].unit}</td>`;
-        popUpTable.innerHTML += row;
+        if (userData[i].region_from === userData[i].region_to) {
+            var row = ` <td>${userData[i].region_from}</td>
+                        <td>${userData[i].sector_from}</td>
+                        <td>${userData[i].sector_to}</td>
+                        <td>${Math.round(userData[i].val)}</td>
+                        <td>${userData[i].unit}</td>`;
+            popUpTable.innerHTML += row;
+        }
     }
     popUpTable.innerHTML += `</tr>`;
     var popup = L.popup({offset: [-2, -24], maxWidth: "auto"})
@@ -347,7 +349,7 @@ function getRanFloat(){
 
 function swoops(userData, pop, bounds) {
     var formData = readData();
-    console.log(userData)
+    //console.log(userData)
     for (var i=0; i < userData.length; i++ ){
       
         var sectorFrom = userData[i].sector_from;
@@ -366,13 +368,13 @@ function swoops(userData, pop, bounds) {
 
         // Get values for tooltip
         var ud_rf   = userData[i].region_from;
-        console.log("rf " + ud_rf)
+        //console.log("rf " + ud_rf)
         var ud_rt   = userData[i].region_to;
-        console.log("rt " + ud_rt)
+        //console.log("rt " + ud_rt)
         var ud_sf   = userData[i].sector_from;
         var ud_st   = userData[i].sector_to;
         var ud_val  = Math.round(userData[i].val);
-        console.log(ud_val)
+        //console.log(ud_val)
         var ud_unit = userData[i].unit;
 
         // Insert a marker (pin) if rf = rt
@@ -452,19 +454,22 @@ function maxZIndex() {
 
 function addTextTooltip(tt_regionFrom, tt_regionTo, tt_sectorFrom, tt_sectorTo, tt_Val, tt_Unit) { // CAN innerHTML ONMOUSEOVER event instead to get tooltip.
     var arrowPath = document.getElementsByTagName('path');
-    console.log(arrowPath)
-    console.log("len -1 " + (arrowPath.length-1))
+
     // getElementsBy (class, tag name, ...) will always return a node list, so we need to iterate through this
+    // Since the addTextTooltip() will be called for each iteration in swoops(), we need to 
+    // match the iterations to the item in the getElementsBy(...) node list. 
     for (var i = 0; i < arrowPath.length; i++) {
         var iteration = arrowPath.length-1
     }
-
-        console.log("i in arrowpath" + i)
-        arrowPath[iteration].addEventListener("mouseenter", function(e) {
+        arrowPath[iteration].addEventListener('mouseenter', function(e) {
             // client may be relev to viewport and page to document
-            var tooltipTest = document.getElementById('results-arrow-body');
-            tooltipTest.innerHTML = ``;
-            //for (var i=0; i<userData.length; i++){
+            var tooltipTest = document.getElementById('arrow-table');
+            tooltipTest.innerHTML = `<th scope="col">Region From</th>
+                            <th scope="col">Region To</th>
+                            <th scope="col">Sector From</th>
+                            <th scope="col">Sector to</th> 
+                            <th scope="col">Value</th> 
+                            <th scope="col">Unit</th> `;
                 var row = ` <td>${tt_regionFrom}</td>
                             <td>${tt_regionTo}</td>
                             <td>${tt_sectorFrom}</td>
@@ -472,26 +477,27 @@ function addTextTooltip(tt_regionFrom, tt_regionTo, tt_sectorFrom, tt_sectorTo, 
                             <td>${tt_Val}</td>
                             <td>${tt_Unit}</td>`;
                 tooltipTest.innerHTML += row;
-            //}
             tooltipTest.innerHTML += `</tbody>`;
 
-            tooltipTest.style.position = 'absolute'; // move to css
+            //tooltipTest.style.position = 'absolute'; // move to css
             // get mouse coords (relative or absol)
             tooltipTest.style.top = (e.pageY - tooltipTest.offsetHeight/2)+'px';
             tooltipTest.style.left = (e.pageX - tooltipTest.offsetWidth/2)+'px';
-            tooltipTest.style.zIndex = maxZIndex() ;
-            tooltipTest.style.display = "hidden";
-            tooltipTest.addEventListener("mouseleave",function(){
-                tooltipTest.innerHTML = ""; 
-                tooltipTest.style.display = "hidden"; //display auto or display hidden
+            tooltipTest.style.zIndex = 400;
+            console.log(maxZIndex());
+            tooltipTest.style.visibility= 'visible';
+            tooltipTest.addEventListener('mouseleave',function(){
+                tooltipTest.innerHTML = ''; 
+                tooltipTest.style.display = 'hidden'; //display auto or display hidden
             })
             // to center, subtract dimension
             // need to computer highest value of z index because this is what is getting hte value
             // to show up above the map (the map is hiding the tooltip information at the moment)
-        })
-        // can change cursor style to pointer in css (cursor: pointer;)
+            //console.log(tableHeader)
 
-    //}
+        })
+
+        // can change cursor style to pointer in css (cursor: pointer;) in CSS: .tooltip { cursor: pointer }
 }
 
 
@@ -523,7 +529,7 @@ async function main(){
 
 
     map.on('zoomend',function(e) {
-        console.log('Actual zoom: ' + e.target.getZoom());
+        //console.log('Actual zoom: ' + e.target.getZoom());
      })
 }
 
