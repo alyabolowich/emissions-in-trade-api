@@ -16,7 +16,7 @@ a {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
     Helvetica, sans-serif;
   display: inline;
-  font-size: 14pt;
+  font-size: 18pt;
 }
 
 /* Navbar CSS */
@@ -36,6 +36,10 @@ nav {
 
 li {
   list-style-type: none;
+}
+
+#form-label {
+  font-size: 20px;
 }
 
 h1 {
@@ -85,6 +89,20 @@ h1 {
   color: #1e2744;
 }
 
+.form-group {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.tooltip-inner {
+  color: black; /* font color */
+  text-align: center;
+  background-color: white;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, sans-serif;
+  font-size: 15px;
+}
+
 #submit-button {
   margin-top: 10px;
   margin-bottom: 20px;
@@ -102,6 +120,7 @@ h1 {
 .form-control {
   height: 3em;
   color: #1e2744;
+  font-size: 14pt;
 }
 
 #arrow-table {
@@ -140,6 +159,7 @@ h1 {
 #pop-up-container {
   visibility: hidden;
 }
+
 /* Footer CSS */
 footer {
   margin-top: 15px;
@@ -176,4 +196,9 @@ footer {
 #about-link:hover {
   color: #151b30;
   text-decoration: none;
+}
+
+.fa {
+  padding-left: 5px;
+  padding-right: 5px;
 }

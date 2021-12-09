@@ -16,9 +16,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
     <!-- Leaflet-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script src="leaflet-curve.js"></script>
+    <script src="geometry-util.js"></script>
+    <script src="leaflet-arrowheads.js"></script>
+    <script src="leaflet-swoopy.js"></script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
@@ -57,8 +60,6 @@
         <p> Get emissions data by sector or region </p>
     </div>
 
-    
-
     <!-- Toggle switch between View Map and View Table options -->
     <div class="container" id="btn-toggle">
         <div class="toggle-switch btn-group">
@@ -69,34 +70,51 @@
         </div>
     </div>
 
-
-
     <!-- User input form -->
     <div class="container">
         <form id="api-form" class="needs-validation">  
             <div class="row" id="form-row"> 
                 <div class="form-group col-md-6" id="userInput">
-                    <label for="stressor" class="form-label">Stressor</label> 
+                    <span for="stressor-label" id="form-label">Stressor
+                        <i class="fa fa-info-circle fa-fw" aria-hidden="true" data-bs-toggle="tooltip" 
+                        title="The impact you want to study." ></i>
+                    </span> 
+
                     <select class="form-control" id="stressor" required>     
                         <option selected disabled value=""> -- Select a Stressor -- </option>
                     </select>   
                 </div>
                 <p style="padding-top: 15px;"> You must select at least one of the following:</p>
                 <div class="form-group col-md-6" id="userInput">
-                    <label for="region-from">Region from</label> 
+                    <span for="region-from" id="form-label">Region from
+                        <i class="fa fa-info-circle fa-fw" aria-hidden="true" data-bs-toggle="tooltip" 
+                        title="The region producing an impact. If region from = region to,
+                        then this reflects trade within the sectors of that one region."></i>
+                    </span>
                     <select class="form-control" id="region-from" multiple required></select>
 
                 </div>
                 <div class="form-group col-md-6" id="userInput">
-                    <label for="region-to">Region to</label>
+                    <span for="region-to" id="form-label">Region to
+                        <i class="fa fa-info-circle fa-fw" aria-hidden="true" data-bs-toggle="tooltip" 
+                        title="The region consuming an impact. If region from = region to,
+                        then this reflects trade within that one region."></i>
+                    </span>
                     <select class="form-control" id="region-to" multiple required></select>
                 </div>
                 <div class="form-group col-md-6" id="userInput">
-                    <label for="sector-from">Sector from</label>
+                    <span for="sector-from" id="form-label">Sector from
+                        <i class="fa fa-info-circle fa-fw" aria-hidden="true" data-bs-toggle="tooltip" 
+                        title="The sector producing an impact. If sector from = sector to,
+                        then this reflects trade within that sector."></i>
+                    </span>
                     <select class="form-control" id="sector-from" multiple required></select>
                 </div>
                 <div class="form-group col-md-6" id="userInput">
-                    <label for="sector-to">Sector to</label>
+                    <span for="sector-to" id="form-label">Sector to
+                        <i class="fa fa-info-circle fa-fw" aria-hidden="true" data-bs-toggle="tooltip" 
+                        title="The sector consuming an impact. If sector from = sector to,
+                        then this reflects trade within that sector."></i>
                     <select class="form-control" id="sector-to" multiple required></select>
                 </div>
             </div>
@@ -188,14 +206,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" 
     integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
-    <!-- Leaflet -->
+    <!-- Leaflet 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-    crossorigin=""></script>
+    crossorigin=""></script> 
     <script src="leaflet-curve.js"></script>
     <script src="geometry-util.js"></script>
     <script src="leaflet-arrowheads.js"></script>
-    <script src="leaflet-swoopy.js"></script>
+    <script src="leaflet-swoopy.js"></script> -->
 
 
     <!-- main -->
@@ -203,6 +221,7 @@
     <script src="./evtrack/load.min.js"></script>
 
  <script>
+
     let queryString = window.location.search;
     let urlParams = new URLSearchParams(queryString);
 

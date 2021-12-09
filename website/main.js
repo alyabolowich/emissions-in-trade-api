@@ -37,6 +37,12 @@ var maxVals = {
 
 document.getElementById("info-table").style.visibility="hidden";
 
+// Initialise all info-icon tooltips (code snippet from Bootstrap)
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
 // ** FUNCTIONS ** // 
 
 // Load stressors
