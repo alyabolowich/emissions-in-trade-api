@@ -16,10 +16,11 @@ a {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
     Helvetica, sans-serif;
   display: inline;
-  font-size: 18pt;
+  font-size: 12pt;
 }
 
 /* Navbar CSS */
+
 nav {
   background-color: #ffffff;
   justify-content: space-between !important;
@@ -27,6 +28,7 @@ nav {
   border-bottom: 1px solid #e2866d;
   font-family: Helvetica;
   padding-bottom: 1em;
+  text-align: right;
 }
 
 .nav-link {
@@ -38,8 +40,8 @@ li {
   list-style-type: none;
 }
 
-#form-label {
-  font-size: 20px;
+.logo {
+  height: 50px;
 }
 
 h1 {
@@ -51,13 +53,20 @@ h1 {
   font-weight: 100;
 }
 
-.logo {
-  height: 50px;
+.fa-bars {
+  color: #1e2744;
+}
+
+.navbar-collapse {
+  flex-basis: 100%;
+  flex-grow: 1;
+  align-items: center;
 }
 
 /* Jumbotron CSS */
 #jumbotron {
   text-align: center;
+  margin-top: 50px;
 }
 
 .jtron-header {
@@ -74,13 +83,13 @@ h1 {
 }
 
 #map-btn {
+  border: 1px solid black;
   background: white;
-  box-shadow: none !important;
 }
 
 #table-btn {
+  border: 1px solid black;
   background: white;
-  box-shadow: none !important;
 }
 
 /* Form CSS */
@@ -89,9 +98,25 @@ h1 {
   color: #1e2744;
 }
 
+@media (max-width: 991px) {
+  #api-form {
+    margin-left: 1.5rem;
+    margin-right: 2rem;
+  }
+}
+
 .form-group {
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+.form-control {
+  color: #1e2744;
+  font-size: 14pt;
+}
+
+#form-label {
+  font-size: 20px;
 }
 
 .tooltip-inner {
@@ -117,12 +142,6 @@ h1 {
   cursor: pointer;
 }
 
-.form-control {
-  height: 3em;
-  color: #1e2744;
-  font-size: 14pt;
-}
-
 #arrow-table {
   background-color: white;
   display: flex;
@@ -140,20 +159,6 @@ h1 {
   border-bottom-width: 1px;
   border-collapse: separate;
   position: absolute;
-  /*display: none;*/
-
-  /*   padding-top: 35px;
-  padding-left: 8px;
-  padding-bottom: 35px;
-  padding-right: 8px;
-  margin-top: 25px;
-  margin-right: 19px;
-  margin-bottom: 25px;
-  margin-left: 19px;
-  border-top-width: 1px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-  border-left-width: 1px; */
 }
 
 #pop-up-container {
@@ -168,8 +173,8 @@ footer {
   background-color: blanchedalmond;
 }
 
-.made-by {
-  text-align: center;
+#footer-links {
+  margin-top: 0px !important;
 }
 
 /*   IO.HTML CSS */
@@ -188,9 +193,23 @@ footer {
   text-align: justify;
 }
 
+@media (max-width: 768px) {
+  .about-paragraph {
+    margin-left: 0.3rem;
+    margin-right: 0.3rem;
+    font-size: 0.8rem;
+  }
+}
+
 #about-link {
   font-size: 16px;
   color: #717ca1;
+}
+
+@media (max-width: 768px) {
+  #about-link {
+    font-size: 0.8rem;
+  }
 }
 
 #about-link:hover {
@@ -198,7 +217,14 @@ footer {
   text-decoration: none;
 }
 
-.fa {
+.fa-linkedin {
   padding-left: 5px;
   padding-right: 5px;
+  font-size: 30px;
+}
+
+.fa-github {
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 30px;
 }
